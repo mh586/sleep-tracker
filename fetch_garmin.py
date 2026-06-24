@@ -13,17 +13,15 @@ if not EMAIL or not PASSWORD:
 try:
     garmin = Garmin(EMAIL, PASSWORD)
     garmin.login()
+    print("Login successful.")
 except Exception as e:
     print(f"Failed to log into Garmin Connect endpoint framework: {e}")
     exit(1)
 
-# FORCE LOCAL TIME: Calculate target date using Central European Time offset (UTC+2)
-# This guarantees it queries the exact calendar day you woke up on
 local_time = datetime.now(timezone.utc) + timedelta(hours=2)
 todayStr = local_time.strftime("%Y-%m-%d")
-print(f"Executing Deep Telemetry Sync for Local Date: {todayStr}")
+print(f"Querying date: {todayStr}")
 
-# Base dictionary mapping to UI elements
 m = {
     "g_score": "--", "g_hrv": "--", "g_total": "--", "g_deep": "--", 
     "g_rem": "--", "g_light": "--", "g_awake": "--", "g_restless": "--", 
@@ -36,12 +34,15 @@ def format_seconds(sec):
     m = (sec % 3600) // 60
     return f"{int(h)}h {int(m)}m" if h > 0 else f"{int(m)}m"
 
-# --- 1. DEEP HYPNOGRAM & PARSING STRUCTURAL SLEEP DATA ---
+# --- DIAGNOSTIC PARSING ---
 try:
-    sleep_data = garmin.get_sleep_data(todayStr) or {}
-    daily_sleep = sleep_data.get("dailySleepDTO", {})
+    sleep_data = garmin.get_sleep_data(todayStr)
+    print(f"Raw sleep_data keys found: {list(sleep_data.keys()) if sleep_data else 'None/Empty'}")
     
-    if daily_sleep:
+    if sleep_data and "dailySleepDTO" in sleep_data:
+        daily_sleep = sleep_data["dailySleepDTO"]
+        print(f"dailySleepDTO keys: {list(daily_sleep.keys())}")
+        
         if daily_sleep.get("sleepScore"): m["g_score"] = str(daily_sleep.get("sleepScore"))
         m["g_total"] = format_seconds(daily_sleep.get("sleepTimeSeconds", 0))
         m["g_deep"] = format_seconds(daily_sleep.get("deepSleepSeconds", 0))
@@ -53,41 +54,29 @@ try:
             m["g_ashr"] = f"{int(daily_sleep.get('averageSleepHeartRate'))} bpm"
         if daily_sleep.get("averageRespirationValue"):
             m["g_resp"] = f"{round(daily_sleep.get('averageRespirationValue'), 1)} brpm"
-            
-    if daily_sleep.get("restlessSleepMovementsCount") is not None:
-        m["g_restless"] = f"{daily_sleep.get('restlessSleepMovementsCount')} mvmt"
-    elif daily_sleep.get("sleepRestlessnessScaleValue") is not None:
-        m["g_restless"] = f"Idx: {daily_sleep.get('sleepRestlessnessScaleValue')}/100"
+        if daily_sleep.get("restlessSleepMovementsCount") is not None:
+            m["g_restless"] = f"{daily_sleep.get('restlessSleepMovementsCount')} mvmt"
 except Exception as e:
-    print(f"Error parsing hypnogram dataset structures: {e}")
+    print(f"Sleep diagnostic crash: {e}")
 
-# --- 2. RESTING HEART RATE FROM DAILY METADATA USER STRUC ---
 try:
     stats = garmin.get_user_summary(todayStr) or {}
+    print(f"User summary keys found: {list(stats.keys()) if stats else 'Empty'}")
     if stats.get("restingHeartRate"):
         m["g_rhr"] = f"{int(stats.get('restingHeartRate'))} bpm"
 except Exception as e:
-    print(f"Bypassing baseline User Summary payload tracking: {e}")
+    print(f"Summary diagnostic crash: {e}")
 
-# --- 3. OVERNIGHT AUTONOMIC HRV ANALYSIS ---
 try:
     hrv_data = garmin.get_hrv_data(todayStr) or {}
+    print(f"HRV data keys found: {list(hrv_data.keys()) if hrv_data else 'Empty'}")
     hrv_summary = hrv_data.get("hrvSummaryDTO", {})
     if hrv_summary and hrv_summary.get("lastNightAvg"):
         m["g_hrv"] = f"{int(hrv_summary.get('lastNightAvg'))} ms"
 except Exception as e:
-    print(f"Bypassing HRV specialized timeline parser: {e}")
+    print(f"HRV diagnostic crash: {e}")
 
-# --- 4. OVERNIGHT SYMPATHETIC STRESS ARCHITECTURE ---
-try:
-    if 'sleep_data' in locals() and sleep_data.get("sleepStressDTO"):
-        stress_val = sleep_data.get("sleepStressDTO", {}).get("averageStressLevel", 0)
-        if stress_val > 0:
-            m["g_stress"] = f"{int(stress_val)}/100"
-except Exception as e:
-    print(f"Bypassing autonomic stress scale module: {e}")
-
-# --- 5. COMPILING FILE CHANGES INTO IN-MEMORY JSON LEDGER ---
+# --- SAVE TO DATABASE ---
 db_filename = "sleep_database.json"
 if os.path.exists(db_filename):
     with open(db_filename, "r") as f:
@@ -97,14 +86,8 @@ else:
     db = {}
 
 key = f"sleep_data_{todayStr}"
-if key not in db:
-    db[key] = {}
-
-for k, v in m.items():
-    if v != "--":
-        db[key][k] = v
+db[key] = {k: v for k, v in m.items() if v != "--"}
+print(f"Writing block to JSON for {key}: {db[key]}")
 
 with open(db_filename, "w") as f:
     json.dump(db, f, indent=4)
-
-print(f"Database sync successful for {key}: {db[key]}")
