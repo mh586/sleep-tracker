@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sleep Tracker Log</title>
-    <!-- Pico.css for elegant mobile styling -->
+    <title>Sleep & Garmin Ledger</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
         body { padding: 20px; max-width: 500px; margin: 0 auto; }
@@ -15,6 +14,10 @@
         .header-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 1rem; }
         .header-controls input[type="date"] { margin: 0; flex-grow: 1; }
         .header-controls button { margin: 0; white-space: nowrap; }
+        .garmin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem; }
+        .garmin-card { background: var(--card-background-color); border: 1px solid var(--card-border-color); border-radius: 8px; padding: 10px; text-align: center; }
+        .garmin-label { font-size: 0.75rem; text-transform: uppercase; color: var(--muted-color); }
+        .garmin-value { font-size: 1.4rem; font-weight: bold; margin-top: 5px; color: var(--primary); }
     </style>
 </head>
 <body>
@@ -28,54 +31,39 @@
             </div>
         </header>
 
+        <h3>⌚ Garmin Sync Metrics</h3>
+        <div class="garmin-grid">
+            <div class="garmin-card">
+                <div class="garmin-label">Score</div>
+                <div class="garmin-value" id="garmin_score">--</div>
+            </div>
+            <div class="garmin-card">
+                <div class="garmin-label">Avg HRV</div>
+                <div class="garmin-value" id="garmin_hrv">--</div>
+            </div>
+            <div class="garmin-card">
+                <div class="garmin-label">Deep+REM</div>
+                <div class="garmin-value" id="garmin_deep">--</div>
+            </div>
+        </div>
+
         <form id="checklistForm">
-            <!-- Morning Section -->
             <h3>🌅 Morning</h3>
-            <label>
-                <input type="checkbox" id="sunlight">
-                <span>Natural sunlight (10-15 mins)</span>
-            </label>
-            <label>
-                <input type="checkbox" id="caffeine-delay">
-                <span>Delay caffeine for 90 mins</span>
-            </label>
+            <label><input type="checkbox" id="sunlight"> <span>Natural sunlight (10-15 mins)</span></label>
+            <label><input type="checkbox" id="caffeine-delay"> <span>Delay caffeine for 90 mins</span></label>
 
-            <!-- Afternoon Section -->
             <h3>☀️ Afternoon</h3>
-            <label>
-                <input type="checkbox" id="caffeine-cutoff">
-                <span>No caffeine after 2:00 PM</span>
-            </label>
-            <label>
-                <input type="checkbox" id="exercise">
-                <span>Finish workouts 4+ hours before bed</span>
-            </label>
+            <label><input type="checkbox" id="caffeine-cutoff"> <span>No caffeine after 2:00 PM</span></label>
+            <label><input type="checkbox" id="exercise"> <span>Finish workouts 4+ hours before bed</span></label>
 
-            <!-- Evening Section -->
             <h3>🌆 Evening</h3>
-            <label>
-                <input type="checkbox" id="light-meal">
-                <span>Last heavy meal 3 hours before bed</span>
-            </label>
-            <label>
-                <input type="checkbox" id="dim-lights">
-                <span>Dim overhead house lights</span>
-            </label>
+            <label><input type="checkbox" id="light-meal"> <span>Last heavy meal 3 hours before bed</span></label>
+            <label><input type="checkbox" id="dim-lights"> <span>Dim overhead house lights</span></label>
 
-            <!-- Night Section -->
             <h3>🛌 Night</h3>
-            <label>
-                <input type="checkbox" id="screens">
-                <span>No screens 1 hour before bed</span>
-            </label>
-            <label>
-                <input type="checkbox" id="temp">
-                <span>Cool room (60–67°F / 15–19°C)</span>
-            </label>
-            <label>
-                <input type="checkbox" id="brain-dump">
-                <span>5-minute mind dump / To-Do list</span>
-            </label>
+            <label><input type="checkbox" id="screens"> <span>No screens 1 hour before bed</span></label>
+            <label><input type="checkbox" id="temp"> <span>Cool room (15–19°C)</span></label>
+            <label><input type="checkbox" id="brain-dump"> <span>5-minute mind dump / To-Do list</span></label>
         </form>
     </main>
 
@@ -83,63 +71,84 @@
         const datePicker = document.getElementById('datePicker');
         const form = document.getElementById('checklistForm');
         const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+        let remoteDatabase = {};
         
-        // Helper function to format date as YYYY-MM-DD using local time
         function getLocalDateString(date) {
             const offset = date.getTimezoneOffset();
             const localDate = new Date(date.getTime() - (offset * 60 * 1000));
             return localDate.toISOString().split('T')[0];
         }
 
-        // Set up the page on load
-        function init() {
-            jumpToToday();
+        // Fetch the global json compiled by GitHub actions
+        async function fetchRemoteDatabase() {
+            try {
+                // cache busting string guarantees your mobile phone pulls fresh updates instead of caching old values
+                const response = await fetch(`sleep_database.json?nocache=${new Date().getTime()}`);
+                if (response.ok) {
+                    remoteDatabase = await response.json();
+                }
+            } catch (e) {
+                console.log("No remote database compiled yet.");
+            }
+            // Trigger load once data is pulled
+            loadDate(datePicker.value);
+        }
 
-            // Attach event listeners to checkboxes to save data dynamically
+        function init() {
+            const todayStr = getLocalDateString(new Date());
+            datePicker.value = todayStr;
+
             checkboxes.forEach(cb => {
                 cb.addEventListener('change', () => {
-                    saveCurrentState();
+                    saveLocalState();
                     toggleStyle(cb);
                 });
             });
+
+            fetchRemoteDatabase();
         }
 
-        // Set date picker to today's local date and load it
         function jumpToToday() {
             const todayStr = getLocalDateString(new Date());
             datePicker.value = todayStr;
             loadDate(todayStr);
         }
 
-        // Load the checklist data for a specific date string (YYYY-MM-DD)
         function loadDate(dateStr) {
-            // Check keys like "sleep_data_2026-06-24"
-            const savedData = localStorage.getItem(`sleep_data_${dateStr}`);
-            const dayScores = savedData ? JSON.parse(savedData) : {};
+            // 1. Read Local Storage Checkboxes
+            const localSavedData = localStorage.getItem(`sleep_data_${dateStr}`);
+            const dayHabits = localSavedData ? JSON.parse(localSavedData) : {};
 
             checkboxes.forEach(cb => {
-                // If the item exists and is true, check it; otherwise clear it
-                cb.checked = !!dayScores[cb.id];
+                cb.checked = !!dayHabits[cb.id];
                 toggleStyle(cb);
             });
+
+            // 2. Read Global Automated Garmin metrics from the script
+            const remoteDayKey = `sleep_data_${dateStr}`;
+            if (remoteDatabase[remoteDayKey]) {
+                document.getElementById('garmin_score').innerText = remoteDatabase[remoteDayKey]['garmin_score'] || '--';
+                document.getElementById('garmin_hrv').innerText = remoteDatabase[remoteDayKey]['garmin_hrv'] ? remoteDatabase[remoteDayKey]['garmin_hrv'] + ' ms' : '--';
+                document.getElementById('garmin_deep').innerText = remoteDatabase[remoteDayKey]['garmin_deep'] ? remoteDatabase[remoteDayKey]['garmin_deep'] + ' h' : '--';
+            } else {
+                document.getElementById('garmin_score').innerText = '--';
+                document.getElementById('garmin_hrv').innerText = '--';
+                document.getElementById('garmin_deep').innerText = '--';
+            }
         }
 
-        // Save current checkbox layout to the active date's storage key
-        function saveCurrentState() {
+        function saveLocalState() {
             const activeDate = datePicker.value;
             if (!activeDate) return;
 
-            const dayScores = {};
+            const dayHabits = {};
             checkboxes.forEach(cb => {
-                if (cb.checked) {
-                    dayScores[cb.id] = true;
-                }
+                if (cb.checked) dayHabits[cb.id] = true;
             });
 
-            localStorage.setItem(`sleep_data_${activeDate}`, JSON.stringify(dayScores));
+            localStorage.setItem(`sleep_data_${activeDate}`, JSON.stringify(dayHabits));
         }
 
-        // Handle visual text strikethrough styling
         function toggleStyle(cb) {
             const textSpan = cb.nextElementSibling;
             if (cb.checked) {
@@ -149,7 +158,6 @@
             }
         }
 
-        // Run setup
         init();
     </script>
 </body>
