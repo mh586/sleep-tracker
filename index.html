@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Sleep Tracker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        body { padding: 20px; max-width: 500px; margin: 0 auto; }
+        .strikethrough { text-decoration: line-through; opacity: 0.6; }
+        label { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 1.1rem; }
+        input[type="checkbox"] { margin: 0; width: 22px; height: 22px; }
+        h3 { margin-top: 1.5rem; border-bottom: 1px solid var(--muted-border-color); padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <main class="container">
+        <header>
+            <h2>🌙 Sleep Checklist</h2>
+            <button class="outline secondary" onclick="resetChecklist()">Reset Day</button>
+        </header>
+
+        <form id="checklistForm">
+            <h3>🌅 Morning</h3>
+            <label>
+                <input type="checkbox" id="sunlight">
+                <span>Natural sunlight (10-15 mins)</span>
+            </label>
+            <label>
+                <input type="checkbox" id="caffeine-delay">
+                <span>Delay caffeine for 90 mins</span>
+            </label>
+
+            <h3>☀️ Afternoon</h3>
+            <label>
+                <input type="checkbox" id="caffeine-cutoff">
+                <span>No caffeine after 2:00 PM</span>
+            </label>
+            <label>
+                <input type="checkbox" id="exercise">
+                <span>Finish workouts 4+ hours before bed</span>
+            </label>
+
+            <h3>🌆 Evening</h3>
+            <label>
+                <input type="checkbox" id="light-meal">
+                <span>Last heavy meal 3 hours before bed</span>
+            </label>
+            <label>
+                <input type="checkbox" id="dim-lights">
+                <span>Dim overhead house lights</span>
+            </label>
+
+            <h3>🛌 Night</h3>
+            <label>
+                <input type="checkbox" id="screens">
+                <span>No screens 1 hour before bed</span>
+            </label>
+            <label>
+                <input type="checkbox" id="temp">
+                <span>Cool room (60–67°F / 15–19°C)</span>
+            </label>
+            <label>
+                <input type="checkbox" id="brain-dump">
+                <span>5-minute mind dump / To-Do list</span>
+            </label>
+        </form>
+    </main>
+
+    <script>
+        const form = document.getElementById('checklistForm');
+        const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+
+        // Load saved states from phone storage
+        checkboxes.forEach(cb => {
+            const savedState = localStorage.getItem(cb.id);
+            if (savedState === 'true') {
+                cb.checked = true;
+                cb.nextElementSibling.classList.add('strikethrough');
+            }
+
+            // Save state on change and toggle strikethrough
+            cb.addEventListener('change', (e) => {
+                localStorage.setItem(cb.id, e.target.checked);
+                if (e.target.checked) {
+                    e.target.nextElementSibling.classList.add('strikethrough');
+                } else {
+                    e.target.nextElementSibling.classList.remove('strikethrough');
+                }
+            });
+        });
+
+        // Reset button function
+        function resetChecklist() {
+            if (confirm('Reset all tasks for a new day?')) {
+                checkboxes.forEach(cb => {
+                    cb.checked = false;
+                    cb.nextElementSibling.classList.remove('strikethrough');
+                    localStorage.removeItem(cb.id);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
