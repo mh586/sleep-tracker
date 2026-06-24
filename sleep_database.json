@@ -6,6 +6,11 @@
         "g_light": "3h 13m",
         "g_awake": "25m",
         "g_rhr": "51 bpm",
-        "g_resp": "15.0 brpm"
+        "g_resp": "15.0 brpm",
+        "g_score": "58",
+        "g_hrv": "35 ms",
+        "g_restless": "27 mvmt",
+        "g_stress": "34/100",
+        "g_ashr": "59 bpm"
     }
 }
