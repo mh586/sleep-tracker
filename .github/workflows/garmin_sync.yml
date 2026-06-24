@@ -2,9 +2,8 @@ name: Garmin Morning Sync
 
 on:
   schedule:
-    # Runs everyday at 06:30 AM UTC (Adjust to your local timezone preference)
     - cron: '30 6 * * *'
-  workflow_dispatch: # Allows you to force run it manually with a button click
+  workflow_dispatch:
 
 jobs:
   sync:
@@ -16,10 +15,11 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '3.11' # Upgraded version
 
     - name: Install Dependencies
       run: |
+        python -m pip install --upgrade pip
         pip install python-garminconnect
 
     - name: Run Fetch Script
