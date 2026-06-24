@@ -20,7 +20,7 @@ except Exception as e:
 # Keep your local timezone calculation matching your day layout
 local_time = datetime.now(timezone.utc) + timedelta(hours=2)
 todayStr = local_time.strftime("%Y-%m-%d")
-print(f"Executing Final Precise Sync for Local Date: {todayStr}")
+print(f"Executing Deep Telemetry Sync for Local Date: {todayStr}")
 
 m = {
     "g_score": "--", "g_hrv": "--", "g_total": "--", "g_deep": "--", 
@@ -34,27 +34,25 @@ def format_seconds(sec):
     m = (sec % 3600) // 60
     return f"{int(h)}h {int(m)}m" if h > 0 else f"{int(m)}m"
 
-# --- 1. SLEEP DATA & STAGES ---
+# --- 1. SLEEP DATA & HYPNOGRAM PARAMETERS ---
 try:
     sleep_data = garmin.get_sleep_data(todayStr) or {}
     daily_sleep = sleep_data.get("dailySleepDTO", {})
     
     if daily_sleep:
-        # Extract Sleep Score from nested array/object structure
-        score_data = daily_sleep.get("sleepScores", {})
-        if isinstance(score_data, dict) and score_data.get("overall", {}).get("value"):
-            m["g_score"] = str(score_data["overall"]["value"])
-        elif isinstance(score_data, list) and len(score_data) > 0:
-            m["g_score"] = str(score_data[0].get("value", "--"))
+        # Deep extraction for the Sleep Score dictionary object
+        scores_container = daily_sleep.get("sleepScores", {})
+        if isinstance(scores_container, dict) and "overall" in scores_container:
+            m["g_score"] = str(scores_container["overall"].get("value", "--"))
         
-        # Durations
+        # Core Durations
         m["g_total"] = format_seconds(daily_sleep.get("sleepTimeSeconds", 0))
         m["g_deep"] = format_seconds(daily_sleep.get("deepSleepSeconds", 0))
         m["g_rem"] = format_seconds(daily_sleep.get("remSleepSeconds", 0))
         m["g_light"] = format_seconds(daily_sleep.get("lightSleepSeconds", 0))
         m["g_awake"] = format_seconds(daily_sleep.get("awakeSleepSeconds", 0))
         
-        # Heart Rate & Respiration during sleep
+        # Core Heart Rate Metrics
         if daily_sleep.get("avgHeartRate"):
             m["g_ashr"] = f"{int(daily_sleep.get('avgHeartRate'))} bpm"
         if daily_sleep.get("averageRespirationValue"):
@@ -75,7 +73,7 @@ try:
 except Exception as e:
     print(f"Error parsing sleep structures: {e}")
 
-# --- 2. USER SUMMARY (RHR FALLBACK) ---
+# --- 2. USER SUMMARY (RHR COUPLING) ---
 try:
     stats = garmin.get_user_summary(todayStr) or {}
     if stats.get("restingHeartRate"):
