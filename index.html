@@ -3,50 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sleep & Garmin Ledger</title>
+    <title>Advanced Sleep & Physiology Architecture</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
-        body { padding: 20px; max-width: 500px; margin: 0 auto; }
-        .strikethrough { text-decoration: line-through; opacity: 0.6; }
-        label { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 1.1rem; }
-        input[type="checkbox"] { margin: 0; width: 24px; height: 24px; }
-        h3 { margin-top: 1.5rem; border-bottom: 1px solid var(--muted-border-color); padding-bottom: 5px; }
-        .header-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 1rem; }
+        body { padding: 15px; max-width: 500px; margin: 0 auto; }
+        .strikethrough { text-decoration: line-through; opacity: 0.5; }
+        label { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 1.05rem; }
+        input[type="checkbox"] { margin: 0; width: 22px; height: 22px; }
+        h3 { margin-top: 1.2rem; border-bottom: 1px solid var(--muted-border-color); padding-bottom: 3px; margin-bottom: 0.8rem; }
+        .header-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 0.8rem; }
         .header-controls input[type="date"] { margin: 0; flex-grow: 1; }
         .header-controls button { margin: 0; white-space: nowrap; }
-        .garmin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem; }
-        .garmin-card { background: var(--card-background-color); border: 1px solid var(--card-border-color); border-radius: 8px; padding: 10px; text-align: center; }
-        .garmin-label { font-size: 0.75rem; text-transform: uppercase; color: var(--muted-color); }
-        .garmin-value { font-size: 1.4rem; font-weight: bold; margin-top: 5px; color: var(--primary); }
+        
+        .section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted-color); margin-top: 1rem; margin-bottom: 0.5rem; font-weight: bold;}
+        .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 0.5rem; }
+        .metric-card { background: var(--card-background-color); border: 1px solid var(--card-border-color); border-radius: 6px; padding: 6px 2px; text-align: center; }
+        .metric-lbl { font-size: 0.65rem; color: var(--muted-color); text-transform: uppercase; font-weight: 600; }
+        .metric-val { font-size: 1.1rem; font-weight: bold; margin-top: 1px; color: var(--primary); }
     </style>
 </head>
 <body>
 
     <main class="container">
         <header>
-            <h2>🌙 Sleep Ledger</h2>
+            <h2>🌙 Sleep Architecture</h2>
             <div class="header-controls">
                 <input type="date" id="datePicker" onchange="loadDate(this.value)">
                 <button class="outline secondary" onclick="jumpToToday()">Today</button>
             </div>
         </header>
 
-        <h3>⌚ Garmin Sync Metrics</h3>
-        <div class="garmin-grid">
-            <div class="garmin-card">
-                <div class="garmin-label">Score</div>
-                <div class="garmin-value" id="garmin_score">--</div>
-            </div>
-            <div class="garmin-card">
-                <div class="garmin-label">Avg HRV</div>
-                <div class="garmin-value" id="garmin_hrv">--</div>
-            </div>
-            <div class="garmin-card">
-                <div class="garmin-label">Deep+REM</div>
-                <div class="garmin-value" id="garmin_deep">--</div>
-            </div>
+        <!-- Garmin Core Summary -->
+        <div class="section-title">Core Performance</div>
+        <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-lbl">Sleep Score</div><div class="metric-val" id="g_score">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">Avg HRV</div><div class="metric-val" id="g_hrv">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">Total Sleep</div><div class="metric-val" id="g_total">--</div></div>
         </div>
 
+        <!-- Hypnogram Stages Distribution -->
+        <div class="section-title">Sleep Architecture Stages</div>
+        <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-lbl">Deep Sleep</div><div class="metric-val" id="g_deep">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">REM Sleep</div><div class="metric-val" id="g_rem">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">Light Sleep</div><div class="metric-val" id="g_light">--</div></div>
+        </div>
+        <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-lbl">Awake Time</div><div class="metric-val" id="g_awake">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">Restlessness</div><div class="metric-val" id="g_restless">--</div></div>
+            <div class="metric-card" style="visibility: hidden;"></div>
+        </div>
+
+        <!-- Autonomic / Physiological Telemetry -->
+        <div class="section-title">Autonomic & Autoregulation</div>
+        <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-lbl">Sleep Stress</div><div class="metric-val" id="g_stress">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">Resting HR</div><div class="metric-val" id="g_rhr">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">Avg Sleep HR</div><div class="metric-val" id="g_ashr">--</div></div>
+        </div>
+        <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-lbl">Respiration</div><div class="metric-val" id="g_resp">--</div></div>
+            <div class="metric-card" style="visibility: hidden;"></div>
+            <div class="metric-card" style="visibility: hidden;"></div>
+        </div>
+
+        <!-- Habits Form Checklist -->
         <form id="checklistForm">
             <h3>🌅 Morning</h3>
             <label><input type="checkbox" id="sunlight"> <span>Natural sunlight (10-15 mins)</span></label>
@@ -71,6 +92,10 @@
         const datePicker = document.getElementById('datePicker');
         const form = document.getElementById('checklistForm');
         const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+        const metricsList = [
+            'g_score', 'g_hrv', 'g_total', 'g_deep', 'g_rem', 
+            'g_light', 'g_awake', 'g_restless', 'g_stress', 'g_rhr', 'g_ashr', 'g_resp'
+        ];
         let remoteDatabase = {};
         
         function getLocalDateString(date) {
@@ -79,32 +104,20 @@
             return localDate.toISOString().split('T')[0];
         }
 
-        // Fetch the global json compiled by GitHub actions
         async function fetchRemoteDatabase() {
             try {
-                // cache busting string guarantees your mobile phone pulls fresh updates instead of caching old values
                 const response = await fetch(`sleep_database.json?nocache=${new Date().getTime()}`);
-                if (response.ok) {
-                    remoteDatabase = await response.json();
-                }
-            } catch (e) {
-                console.log("No remote database compiled yet.");
-            }
-            // Trigger load once data is pulled
+                if (response.ok) remoteDatabase = await response.json();
+            } catch (e) { console.log("Database fetch fault initialized."); }
             loadDate(datePicker.value);
         }
 
         function init() {
             const todayStr = getLocalDateString(new Date());
             datePicker.value = todayStr;
-
             checkboxes.forEach(cb => {
-                cb.addEventListener('change', () => {
-                    saveLocalState();
-                    toggleStyle(cb);
-                });
+                cb.addEventListener('change', () => { saveLocalState(); toggleStyle(cb); });
             });
-
             fetchRemoteDatabase();
         }
 
@@ -115,47 +128,33 @@
         }
 
         function loadDate(dateStr) {
-            // 1. Read Local Storage Checkboxes
             const localSavedData = localStorage.getItem(`sleep_data_${dateStr}`);
             const dayHabits = localSavedData ? JSON.parse(localSavedData) : {};
-
             checkboxes.forEach(cb => {
                 cb.checked = !!dayHabits[cb.id];
                 toggleStyle(cb);
             });
 
-            // 2. Read Global Automated Garmin metrics from the script
             const remoteDayKey = `sleep_data_${dateStr}`;
-            if (remoteDatabase[remoteDayKey]) {
-                document.getElementById('garmin_score').innerText = remoteDatabase[remoteDayKey]['garmin_score'] || '--';
-                document.getElementById('garmin_hrv').innerText = remoteDatabase[remoteDayKey]['garmin_hrv'] ? remoteDatabase[remoteDayKey]['garmin_hrv'] + ' ms' : '--';
-                document.getElementById('garmin_deep').innerText = remoteDatabase[remoteDayKey]['garmin_deep'] ? remoteDatabase[remoteDayKey]['garmin_deep'] + ' h' : '--';
-            } else {
-                document.getElementById('garmin_score').innerText = '--';
-                document.getElementById('garmin_hrv').innerText = '--';
-                document.getElementById('garmin_deep').innerText = '--';
-            }
+            const remoteDay = remoteDatabase[remoteDayKey] || {};
+            
+            metricsList.forEach(m => {
+                document.getElementById(m).innerText = remoteDay[m] || '--';
+            });
         }
 
         function saveLocalState() {
             const activeDate = datePicker.value;
             if (!activeDate) return;
-
             const dayHabits = {};
-            checkboxes.forEach(cb => {
-                if (cb.checked) dayHabits[cb.id] = true;
-            });
-
+            checkboxes.forEach(cb => { if (cb.checked) dayHabits[cb.id] = true; });
             localStorage.setItem(`sleep_data_${activeDate}`, JSON.stringify(dayHabits));
         }
 
         function toggleStyle(cb) {
             const textSpan = cb.nextElementSibling;
-            if (cb.checked) {
-                textSpan.classList.add('strikethrough');
-            } else {
-                textSpan.classList.remove('strikethrough');
-            }
+            if (cb.checked) textSpan.classList.add('strikethrough');
+            else textSpan.classList.remove('strikethrough');
         }
 
         init();
