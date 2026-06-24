@@ -3,25 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Sleep Tracker</title>
+    <title>Sleep Tracker Log</title>
+    <!-- Pico.css for elegant mobile styling -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
         body { padding: 20px; max-width: 500px; margin: 0 auto; }
         .strikethrough { text-decoration: line-through; opacity: 0.6; }
         label { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 1.1rem; }
-        input[type="checkbox"] { margin: 0; width: 22px; height: 22px; }
+        input[type="checkbox"] { margin: 0; width: 24px; height: 24px; }
         h3 { margin-top: 1.5rem; border-bottom: 1px solid var(--muted-border-color); padding-bottom: 5px; }
+        .header-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 1rem; }
+        .header-controls input[type="date"] { margin: 0; flex-grow: 1; }
+        .header-controls button { margin: 0; white-space: nowrap; }
     </style>
 </head>
 <body>
 
     <main class="container">
         <header>
-            <h2>🌙 Sleep Checklist</h2>
-            <button class="outline secondary" onclick="resetChecklist()">Reset Day</button>
+            <h2>🌙 Sleep Ledger</h2>
+            <div class="header-controls">
+                <input type="date" id="datePicker" onchange="loadDate(this.value)">
+                <button class="outline secondary" onclick="jumpToToday()">Today</button>
+            </div>
         </header>
 
         <form id="checklistForm">
+            <!-- Morning Section -->
             <h3>🌅 Morning</h3>
             <label>
                 <input type="checkbox" id="sunlight">
@@ -32,6 +40,7 @@
                 <span>Delay caffeine for 90 mins</span>
             </label>
 
+            <!-- Afternoon Section -->
             <h3>☀️ Afternoon</h3>
             <label>
                 <input type="checkbox" id="caffeine-cutoff">
@@ -42,6 +51,7 @@
                 <span>Finish workouts 4+ hours before bed</span>
             </label>
 
+            <!-- Evening Section -->
             <h3>🌆 Evening</h3>
             <label>
                 <input type="checkbox" id="light-meal">
@@ -52,6 +62,7 @@
                 <span>Dim overhead house lights</span>
             </label>
 
+            <!-- Night Section -->
             <h3>🛌 Night</h3>
             <label>
                 <input type="checkbox" id="screens">
@@ -69,38 +80,77 @@
     </main>
 
     <script>
+        const datePicker = document.getElementById('datePicker');
         const form = document.getElementById('checklistForm');
         const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+        
+        // Helper function to format date as YYYY-MM-DD using local time
+        function getLocalDateString(date) {
+            const offset = date.getTimezoneOffset();
+            const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+            return localDate.toISOString().split('T')[0];
+        }
 
-        // Load saved states from phone storage
-        checkboxes.forEach(cb => {
-            const savedState = localStorage.getItem(cb.id);
-            if (savedState === 'true') {
-                cb.checked = true;
-                cb.nextElementSibling.classList.add('strikethrough');
-            }
+        // Set up the page on load
+        function init() {
+            jumpToToday();
 
-            // Save state on change and toggle strikethrough
-            cb.addEventListener('change', (e) => {
-                localStorage.setItem(cb.id, e.target.checked);
-                if (e.target.checked) {
-                    e.target.nextElementSibling.classList.add('strikethrough');
-                } else {
-                    e.target.nextElementSibling.classList.remove('strikethrough');
+            // Attach event listeners to checkboxes to save data dynamically
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    saveCurrentState();
+                    toggleStyle(cb);
+                });
+            });
+        }
+
+        // Set date picker to today's local date and load it
+        function jumpToToday() {
+            const todayStr = getLocalDateString(new Date());
+            datePicker.value = todayStr;
+            loadDate(todayStr);
+        }
+
+        // Load the checklist data for a specific date string (YYYY-MM-DD)
+        function loadDate(dateStr) {
+            // Check keys like "sleep_data_2026-06-24"
+            const savedData = localStorage.getItem(`sleep_data_${dateStr}`);
+            const dayScores = savedData ? JSON.parse(savedData) : {};
+
+            checkboxes.forEach(cb => {
+                // If the item exists and is true, check it; otherwise clear it
+                cb.checked = !!dayScores[cb.id];
+                toggleStyle(cb);
+            });
+        }
+
+        // Save current checkbox layout to the active date's storage key
+        function saveCurrentState() {
+            const activeDate = datePicker.value;
+            if (!activeDate) return;
+
+            const dayScores = {};
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    dayScores[cb.id] = true;
                 }
             });
-        });
 
-        // Reset button function
-        function resetChecklist() {
-            if (confirm('Reset all tasks for a new day?')) {
-                checkboxes.forEach(cb => {
-                    cb.checked = false;
-                    cb.nextElementSibling.classList.remove('strikethrough');
-                    localStorage.removeItem(cb.id);
-                });
+            localStorage.setItem(`sleep_data_${activeDate}`, JSON.stringify(dayScores));
+        }
+
+        // Handle visual text strikethrough styling
+        function toggleStyle(cb) {
+            const textSpan = cb.nextElementSibling;
+            if (cb.checked) {
+                textSpan.classList.add('strikethrough');
+            } else {
+                textSpan.classList.remove('strikethrough');
             }
         }
+
+        // Run setup
+        init();
     </script>
 </body>
 </html>
