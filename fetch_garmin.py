@@ -17,10 +17,9 @@ except Exception as e:
     print(f"Failed to log into Garmin Connect endpoint framework: {e}")
     exit(1)
 
-# Keep your local timezone calculation matching your day layout
 local_time = datetime.now(timezone.utc) + timedelta(hours=2)
 todayStr = local_time.strftime("%Y-%m-%d")
-print(f"Executing Deep Telemetry Sync for Local Date: {todayStr}")
+print(f"Executing Deep Search Telemetry Sync for Local Date: {todayStr}")
 
 m = {
     "g_score": "--", "g_hrv": "--", "g_total": "--", "g_deep": "--", 
@@ -34,66 +33,72 @@ def format_seconds(sec):
     m = (sec % 3600) // 60
     return f"{int(h)}h {int(m)}m" if h > 0 else f"{int(m)}m"
 
-# --- 1. SLEEP DATA & HYPNOGRAM PARAMETERS ---
+# A deep search function to scan nested dictionaries and lists for a specific key
+def find_key_deep(data, target_key):
+    if isinstance(data, dict):
+        if target_key in data:
+            return data[target_key]
+        for key, value in data.items():
+            result = find_key_deep(value, target_key)
+            if result is not None:
+                return result
+    elif isinstance(data, list):
+        for item in data:
+            result = find_key_deep(item, target_key)
+            if result is not None:
+                return result
+    return None
+
 try:
     sleep_data = garmin.get_sleep_data(todayStr) or {}
     daily_sleep = sleep_data.get("dailySleepDTO", {})
     
+    # 1. Base Durations (Already working)
     if daily_sleep:
-        # Deep extraction for the Sleep Score dictionary object
-        scores_container = daily_sleep.get("sleepScores", {})
-        if isinstance(scores_container, dict) and "overall" in scores_container:
-            m["g_score"] = str(scores_container["overall"].get("value", "--"))
-        
-        # Core Durations
         m["g_total"] = format_seconds(daily_sleep.get("sleepTimeSeconds", 0))
         m["g_deep"] = format_seconds(daily_sleep.get("deepSleepSeconds", 0))
         m["g_rem"] = format_seconds(daily_sleep.get("remSleepSeconds", 0))
         m["g_light"] = format_seconds(daily_sleep.get("lightSleepSeconds", 0))
         m["g_awake"] = format_seconds(daily_sleep.get("awakeSleepSeconds", 0))
-        
-        # Core Heart Rate Metrics
-        if daily_sleep.get("avgHeartRate"):
-            m["g_ashr"] = f"{int(daily_sleep.get('avgHeartRate'))} bpm"
         if daily_sleep.get("averageRespirationValue"):
             m["g_resp"] = f"{round(daily_sleep.get('averageRespirationValue'), 1)} brpm"
-        if daily_sleep.get("avgSleepStress"):
-            m["g_stress"] = f"{int(daily_sleep.get('avgSleepStress'))}/100"
-            
-    # Restlessness / Movement counts from root properties
-    if sleep_data.get("restlessMomentsCount") is not None:
-        m["g_restless"] = f"{sleep_data.get('restlessMomentsCount')} mvmt"
-    elif daily_sleep.get("restlessSleepMovementsCount") is not None:
-        m["g_restless"] = f"{daily_sleep.get('restlessSleepMovementsCount')} mvmt"
 
-    # Root Level Overnight HRV Extraction
-    if sleep_data.get("avgOvernightHrv"):
-        m["g_hrv"] = f"{int(sleep_data.get('avgOvernightHrv'))} ms"
+    # 2. DYNAMICALLY HUNT MISSING METRICS
+    
+    # Sleep Score Hunt
+    score_hunt = find_key_deep(sleep_data, "sleepScore") or find_key_deep(sleep_data, "value")
+    if score_hunt and str(score_hunt).isdigit():
+        m["g_score"] = str(score_hunt)
+    
+    # Overnight Avg HRV Hunt
+    hrv_hunt = find_key_deep(sleep_data, "avgOvernightHrv") or find_key_deep(sleep_data, "lastNightAvg") or find_key_deep(sleep_data, "averageHRV")
+    if hrv_hunt:
+        m["g_hrv"] = f"{int(float(hrv_hunt))} ms"
+
+    # Restlessness Count Hunt
+    restless_hunt = find_key_deep(sleep_data, "restlessMomentsCount") or find_key_deep(sleep_data, "restlessSleepMovementsCount")
+    if restless_hunt is not None:
+        m["g_restless"] = f"{int(restless_hunt)} mvmt"
+
+    # Sleep Stress Hunt
+    stress_hunt = find_key_deep(sleep_data, "avgSleepStress") or find_key_deep(sleep_data, "averageStressLevel")
+    if stress_hunt:
+        m["g_stress"] = f"{int(float(stress_hunt))}/100"
+
+    # Average Sleeping Heart Rate Hunt
+    ashr_hunt = find_key_deep(sleep_data, "avgHeartRate") or find_key_deep(sleep_data, "averageSleepHeartRate")
+    if ashr_hunt:
+        m["g_ashr"] = f"{int(float(ashr_hunt))} bpm"
+
+    # Resting Heart Rate (Baseline)
+    rhr_hunt = find_key_deep(sleep_data, "restingHeartRate") or find_key_deep(garmin.get_user_summary(todayStr), "restingHeartRate")
+    if rhr_hunt:
+        m["g_rhr"] = f"{int(rhr_hunt)} bpm"
 
 except Exception as e:
-    print(f"Error parsing sleep structures: {e}")
+    print(f"Error during deep crawling sequence: {e}")
 
-# --- 2. USER SUMMARY (RHR COUPLING) ---
-try:
-    stats = garmin.get_user_summary(todayStr) or {}
-    if stats.get("restingHeartRate"):
-        m["g_rhr"] = f"{int(stats.get('restingHeartRate'))} bpm"
-    elif sleep_data.get("restingHeartRate"):
-        m["g_rhr"] = f"{int(sleep_data.get('restingHeartRate'))} bpm"
-except Exception as e:
-    print(f"Error parsing user summary: {e}")
-
-# --- 3. BACKUP OVERNIGHT HRV ---
-if m["g_hrv"] == "--":
-    try:
-        hrv_data = garmin.get_hrv_data(todayStr) or {}
-        hrv_summary = hrv_data.get("hrvSummary", {})
-        if hrv_summary and hrv_summary.get("lastNightAvg"):
-            m["g_hrv"] = f"{int(hrv_summary.get('lastNightAvg'))} ms"
-    except Exception as e:
-        print(f"Error parsing HRV fallback data: {e}")
-
-# --- 4. COMPILING FILE CHANGES ---
+# --- 3. WRITE TO LEDGER ---
 db_filename = "sleep_database.json"
 if os.path.exists(db_filename):
     with open(db_filename, "r") as f:
@@ -103,14 +108,9 @@ else:
     db = {}
 
 key = f"sleep_data_{todayStr}"
-if key not in db:
-    db[key] = {}
-
-for k, v in m.items():
-    if v != "--":
-        db[key][k] = v
+db[key] = {k: v for k, v in m.items() if v != "--"}
 
 with open(db_filename, "w") as f:
     json.dump(db, f, indent=4)
 
-print(f"Database successfully written for {key}: {db[key]}")
+print(f"Deep Search Sync Completed for {key}: {db[key]}")
