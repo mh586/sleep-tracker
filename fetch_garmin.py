@@ -40,10 +40,12 @@ try:
     daily_sleep = sleep_data.get("dailySleepDTO", {})
     
     if daily_sleep:
-        # Extract Nested Sleep Score
-        scores_obj = daily_sleep.get("sleepScores", {})
-        if scores_obj and scores_obj.get("overall", {}).get("value"):
-            m["g_score"] = str(scores_obj["overall"]["value"])
+        # Extract Sleep Score from nested array/object structure
+        score_data = daily_sleep.get("sleepScores", {})
+        if isinstance(score_data, dict) and score_data.get("overall", {}).get("value"):
+            m["g_score"] = str(score_data["overall"]["value"])
+        elif isinstance(score_data, list) and len(score_data) > 0:
+            m["g_score"] = str(score_data[0].get("value", "--"))
         
         # Durations
         m["g_total"] = format_seconds(daily_sleep.get("sleepTimeSeconds", 0))
@@ -57,34 +59,41 @@ try:
             m["g_ashr"] = f"{int(daily_sleep.get('avgHeartRate'))} bpm"
         if daily_sleep.get("averageRespirationValue"):
             m["g_resp"] = f"{round(daily_sleep.get('averageRespirationValue'), 1)} brpm"
+        if daily_sleep.get("avgSleepStress"):
+            m["g_stress"] = f"{int(daily_sleep.get('avgSleepStress'))}/100"
             
-    # Restlessness / Movement counts
-    if daily_sleep.get("restlessSleepMovementsCount") is not None:
-        m["g_restless"] = f"{daily_sleep.get('restlessSleepMovementsCount')} mvmt"
-    elif sleep_data.get("restlessMomentsCount") is not None:
+    # Restlessness / Movement counts from root properties
+    if sleep_data.get("restlessMomentsCount") is not None:
         m["g_restless"] = f"{sleep_data.get('restlessMomentsCount')} mvmt"
+    elif daily_sleep.get("restlessSleepMovementsCount") is not None:
+        m["g_restless"] = f"{daily_sleep.get('restlessSleepMovementsCount')} mvmt"
+
+    # Root Level Overnight HRV Extraction
+    if sleep_data.get("avgOvernightHrv"):
+        m["g_hrv"] = f"{int(sleep_data.get('avgOvernightHrv'))} ms"
 
 except Exception as e:
     print(f"Error parsing sleep structures: {e}")
 
-# --- 2. USER SUMMARY (RHR & STRESS) ---
+# --- 2. USER SUMMARY (RHR FALLBACK) ---
 try:
     stats = garmin.get_user_summary(todayStr) or {}
     if stats.get("restingHeartRate"):
         m["g_rhr"] = f"{int(stats.get('restingHeartRate'))} bpm"
-    if stats.get("averageStressLevel"):
-        m["g_stress"] = f"{int(stats.get('averageStressLevel'))}/100"
+    elif sleep_data.get("restingHeartRate"):
+        m["g_rhr"] = f"{int(sleep_data.get('restingHeartRate'))} bpm"
 except Exception as e:
     print(f"Error parsing user summary: {e}")
 
-# --- 3. OVERNIGHT HRV ---
-try:
-    hrv_data = garmin.get_hrv_data(todayStr) or {}
-    hrv_summary = hrv_data.get("hrvSummary", {})
-    if hrv_summary and hrv_summary.get("lastNightAvg"):
-        m["g_hrv"] = f"{int(hrv_summary.get('lastNightAvg'))} ms"
-except Exception as e:
-    print(f"Error parsing HRV data: {e}")
+# --- 3. BACKUP OVERNIGHT HRV ---
+if m["g_hrv"] == "--":
+    try:
+        hrv_data = garmin.get_hrv_data(todayStr) or {}
+        hrv_summary = hrv_data.get("hrvSummary", {})
+        if hrv_summary and hrv_summary.get("lastNightAvg"):
+            m["g_hrv"] = f"{int(hrv_summary.get('lastNightAvg'))} ms"
+    except Exception as e:
+        print(f"Error parsing HRV fallback data: {e}")
 
 # --- 4. COMPILING FILE CHANGES ---
 db_filename = "sleep_database.json"
