@@ -1,12 +1,14 @@
 name: Garmin Sync Telemetry Pipeline
 
+name: Garmin Sync Telemetry Pipeline
+
 on:
   schedule:
-    # Runs every 30 minutes past the hour (00 and 30) between 04:00 UTC and 19:59 UTC
+    # 1. Runs every 30 minutes (00 and 30) from 04:00 UTC to 19:30 UTC (06:00 to 21:30 local)
     - cron: '0,30 4-19 * * *'
-    # Runs at 04:00 and 04:30 UTC (06:00 and 06:30 CEST) up through 20:00 and 20:30 UTC (22:00 and 22:30 CEST)
+    # 2. Runs at exactly 20:00 and 20:30 UTC (22:00 and 22:30 local) to close out the window
     - cron: '0,30 20 * * *'
-  workflow_dispatch: # Allows manual trigger bypass buttons anytime
+  workflow_dispatch:
 
 jobs:
   run-sync:
