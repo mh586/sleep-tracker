@@ -1,4 +1,191 @@
-function calculateCaffeineClearance() {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio-Architect: Sleep & Recovery Ledger</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        body { padding: 15px; max-width: 500px; margin: 0 auto; }
+        .strikethrough { text-decoration: line-through; opacity: 0.4; }
+        label { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 1.05rem; }
+        input[type="checkbox"] { margin: 0; width: 22px; height: 22px; }
+        h3 { margin-top: 1.2rem; border-bottom: 1px solid var(--muted-border-color); padding-bottom: 3px; margin-bottom: 0.8rem; }
+        .header-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 0.8rem; }
+        .header-controls input[type="date"] { margin: 0; flex-grow: 1; }
+        .header-controls button { margin: 0; white-space: nowrap; }
+        
+        .section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted-color); margin-top: 1rem; margin-bottom: 0.5rem; font-weight: bold;}
+        .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 0.5rem; }
+        .metric-card { background: var(--card-background-color); border: 1px solid var(--card-border-color); border-radius: 6px; padding: 6px 2px; text-align: center; transition: all 0.3s ease; }
+        .metric-lbl { font-size: 0.65rem; color: var(--muted-color); text-transform: uppercase; font-weight: 600; }
+        .metric-val { font-size: 1.1rem; font-weight: bold; margin-top: 1px; }
+
+        /* Physiological Color Coding */
+        .color-green { color: #4caf50 !important; }
+        .color-orange { color: #ff9800 !important; }
+        .color-red { color: #f44336 !important; }
+        .color-neutral { color: var(--primary) !important; }
+
+        /* Gamification & Caffeine Panels */
+        .gamify-panel { background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #334155; border-radius: 8px; padding: 12px; margin-bottom: 1rem; text-align: center; color: #f8fafc; }
+        .gamify-headline { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: bold; margin-bottom: 4px; }
+        .gamify-metrics { display: flex; justify-content: space-around; margin-top: 8px; }
+        .gamify-stat { font-size: 1.2rem; font-weight: bold; color: #38bdf8; }
+        .gamify-lbl { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; }
+
+        .caffeine-panel { background: var(--card-background-color); border: 1px solid var(--card-border-color); border-radius: 8px; padding: 12px; margin-bottom: 1rem; text-align: center;}
+        .caffeine-btn-container { display: flex; gap: 10px; align-items: center; justify-content: center; margin-bottom: 6px; }
+        .caffeine-btn { background-color: #4a3728; border-color: #3d2d21; color: white; margin: 0; font-weight: bold; padding: 6px 16px; font-size: 0.9rem; }
+        .caffeine-btn:hover { background-color: #3d2d21; }
+        .clearance-badge { font-weight: bold; padding: 2px 10px; border-radius: 20px; display: inline-block; margin-top: 4px; color: #fff !important; font-size: 0.85rem; }
+        .bg-green { background-color: #2e7d32 !important; }
+        .bg-orange { background-color: #ef6c00 !important; }
+        .bg-red { background-color: #c62828 !important; }
+    </style>
+</head>
+<body>
+
+    <main class="container">
+        <header>
+            <h2>🌙 Bio-Architect</h2>
+            <div class="header-controls">
+                <input type="date" id="datePicker" onchange="loadDate(this.value)">
+                <button class="outline secondary" onclick="jumpToToday()">Today</button>
+            </div>
+        </header>
+
+        <div class="gamify-panel">
+            <div class="gamify-headline">🏆 Habit & Recovery Gamification</div>
+            <div id="badge_display" style="font-size: 1.8rem; margin: 2px 0;">⚪</div>
+            <div id="streak_alert" style="font-size: 0.75rem; font-weight: bold; color: #fbbf24;">No active streak</div>
+            <div class="gamify-metrics">
+                <div><div class="gamify-stat" id="habit_score">0%</div><div class="gamify-lbl">Habit Score</div></div>
+                <div><div class="gamify-stat" id="streak_count" style="color: #fbbf24;">0 Days</div><div class="gamify-lbl">Perfect Loops</div></div>
+            </div>
+        </div>
+
+        <div class="section-title">Adenosine Clearance Engine</div>
+        <div class="caffeine-panel">
+            <div class="caffeine-btn-container">
+                <button class="caffeine-btn" onclick="logCoffee()">☕ Log Coffee</button>
+                <button class="outline secondary" style="margin:0; padding: 2px 8px; font-size:0.75rem;" onclick="resetCoffee()">Reset</button>
+            </div>
+            <div style="font-size: 0.9rem;">Cups: <strong id="coffee_count">0</strong> | Clearance: <div id="clearance_status" class="clearance-badge bg-green">--:--</div></div>
+        </div>
+
+        <div class="section-title">Core Performance</div>
+        <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-lbl">Sleep Score</div><div class="metric-val color-neutral" id="g_score">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">Avg HRV</div><div class="metric-val color-neutral" id="g_hrv">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">Total Sleep</div><div class="metric-val color-neutral" id="g_total">--</div></div>
+        </div>
+
+        <div class="section-title">Sleep Architecture Stages</div>
+        <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-lbl">Deep Sleep</div><div class="metric-val color-neutral" id="g_deep">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">REM Sleep</div><div class="metric-val color-neutral" id="g_rem">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">Light Sleep</div><div class="metric-val color-neutral" id="g_light">--</div></div>
+        </div>
+        <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-lbl">Awake Time</div><div class="metric-val color-neutral" id="g_awake">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">Restlessness</div><div class="metric-val color-neutral" id="g_restless">--</div></div>
+            <div class="metric-card" style="visibility: hidden;"></div>
+        </div>
+
+        <div class="section-title">Autonomic & Autoregulation</div>
+        <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-lbl">Sleep Stress</div><div class="metric-val color-neutral" id="g_stress">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">Resting HR</div><div class="metric-val color-neutral" id="g_rhr">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">Avg Sleep HR</div><div class="metric-val color-neutral" id="g_ashr">--</div></div>
+        </div>
+        <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-lbl">Respiration</div><div class="metric-val color-neutral" id="g_resp">--</div></div>
+            <div class="metric-card" style="visibility: hidden;"></div>
+            <div class="metric-card" style="visibility: hidden;"></div>
+        </div>
+
+        <form id="checklistForm">
+            <h3>🌅 Morning</h3>
+            <label><input type="checkbox" id="sunlight"> <span>Natural sunlight (10-15 mins)</span></label>
+            <label><input type="checkbox" id="caffeine-delay"> <span>Delay caffeine for 90 mins</span></label>
+
+            <h3>☀️ Afternoon</h3>
+            <label><input type="checkbox" id="caffeine-cutoff"> <span>No caffeine after 2:00 PM</span></label>
+            <label><input type="checkbox" id="exercise"> <span>Finish workouts 4+ hours before bed</span></label>
+
+            <h3>🌆 Evening</h3>
+            <label><input type="checkbox" id="light-meal"> <span>Last heavy meal 3 hours before bed</span></label>
+            <label><input type="checkbox" id="dim-lights"> <span>Dim overhead house lights</span></label>
+
+            <h3>🛌 Night</h3>
+            <label><input type="checkbox" id="screens"> <span>No screens 1 hour before bed</span></label>
+            <label><input type="checkbox" id="temp"> <span>Cool room (15–19°C)</span></label>
+            <label><input type="checkbox" id="brain-dump"> <span>5-minute mind dump / To-Do list</span></label>
+        </form>
+    </main>
+
+    <script>
+        const datePicker = document.getElementById('datePicker');
+        const form = document.getElementById('checklistForm');
+        const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+        const metricsList = [
+            'g_score', 'g_hrv', 'g_total', 'g_deep', 'g_rem', 
+            'g_light', 'g_awake', 'g_restless', 'g_stress', 'g_rhr', 'g_ashr', 'g_resp'
+        ];
+        let remoteDatabase = {};
+        
+        function getLocalDateString(date) {
+            const offset = date.getTimezoneOffset();
+            const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+            return localDate.toISOString().split('T')[0];
+        }
+
+        async function fetchRemoteDatabase() {
+            try {
+                const response = await fetch(`sleep_database.json?nocache=${new Date().getTime()}`);
+                if (response.ok) remoteDatabase = await response.json();
+            } catch (e) { console.log("Database baseline tracking loaded."); }
+            loadDate(datePicker.value);
+        }
+
+        function init() {
+            const todayStr = getLocalDateString(new Date());
+            datePicker.value = todayStr;
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', () => { saveLocalState(); toggleStyle(cb); updateGamificationEngine(); });
+            });
+            fetchRemoteDatabase();
+            setInterval(calculateCaffeineClearance, 60000);
+        }
+
+        function jumpToToday() {
+            const todayStr = getLocalDateString(new Date());
+            datePicker.value = todayStr;
+            loadDate(todayStr);
+        }
+
+        // --- CAFFEINE MUTATION ENGINE ---
+        function getCaffeineLogKey() { return `caffeine_timestamps_${datePicker.value}`; }
+        
+        function logCoffee() {
+            const key = getCaffeineLogKey();
+            let timestamps = JSON.parse(localStorage.getItem(key) || "[]");
+            timestamps.push(new Date().getTime());
+            localStorage.setItem(key, JSON.stringify(timestamps));
+            calculateCaffeineClearance();
+            updateGamificationEngine();
+        }
+        
+        function resetCoffee() {
+            if(confirm("Reset caffeine counter?")) {
+                localStorage.removeItem(getCaffeineLogKey());
+                calculateCaffeineClearance();
+                updateGamificationEngine();
+            }
+        }
+
+        function calculateCaffeineClearance() {
             const key = getCaffeineLogKey();
             const timestamps = JSON.parse(localStorage.getItem(key) || "[]");
             document.getElementById('coffee_count').innerText = timestamps.length;
@@ -13,7 +200,6 @@ function calculateCaffeineClearance() {
             const CAFFEINE_PER_CUP = 80; 
             const HALF_LIFE_HOURS = 5.0; 
 
-            // Construct fixed target 18:00 timestamp for the selected day
             const targetDate18 = new Date(datePicker.value + 'T18:00:00');
             const time18 = targetDate18.getTime();
 
@@ -21,39 +207,46 @@ function calculateCaffeineClearance() {
             let currentSystemCaffeine = 0;
             const now = new Date().getTime();
 
-            // Calculate precise decay levels
             timestamps.forEach(ts => {
-                // 1. Level at 18:00
                 if (time18 >= ts) {
                     let hrs = (time18 - ts) / 3600000;
                     caffeineAt18 += CAFFEINE_PER_CUP * Math.pow(0.5, hrs / HALF_LIFE_HOURS);
                 } else {
-                    // If coffee was logged AFTER 18:00, the full amount is present at 18:00 baseline evaluations
                     caffeineAt18 += CAFFEINE_PER_CUP;
                 }
                 
-                // 2. Live System Level Right Now
                 if (now >= ts) {
                     let hrs = (now - ts) / 3600000;
                     currentSystemCaffeine += CAFFEINE_PER_CUP * Math.pow(0.5, hrs / HALF_LIFE_HOURS);
                 }
             });
 
-            // Display current metabolic load
             badge.innerText = `${Math.round(currentSystemCaffeine)} mg live`;
 
-            // Evaluate thresholds strictly against the 18:00 load parameters
             if (caffeineAt18 <= 20) {
-                // 20mg or less -> Green
                 badge.className = "clearance-badge bg-green";
                 badge.title = `Est at 18:00: ${Math.round(caffeineAt18)}mg`;
             } else if (caffeineAt18 <= 40) {
-                // 21mg to 40mg -> Yellow/Orange
                 badge.className = "clearance-badge bg-orange";
                 badge.title = `Est at 18:00: ${Math.round(caffeineAt18)}mg`;
             } else {
-                // Over 40mg -> Red
                 badge.className = "clearance-badge bg-red";
                 badge.title = `Est at 18:00: ${Math.round(caffeineAt18)}mg`;
             }
         }
+
+        // --- COLOR CODING & GAMIFICATION LOGIC ---
+        function parseTimeToMinutes(str) {
+            if (!str || str === '--') return 0;
+            let matchH = str.match(/(\d+)h/);
+            let matchM = str.match(/(\d+)m/);
+            let mins = 0;
+            if (matchH) mins += parseInt(matchH[1]) * 60;
+            if (matchM) mins += parseInt(matchM[1]);
+            return mins;
+        }
+
+        function colorizePhysiology() {
+            const scoreEl = document.getElementById('g_score');
+            const scoreVal = parseInt(scoreEl.innerText);
+            scoreEl.className = "metric-val " + (isNaN(scoreVal) ? "color-neutral" : scoreVal >= 85 ? "color-green" : scoreVal >= 70 ? "color-orange" : "color
