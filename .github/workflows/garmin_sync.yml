@@ -1,16 +1,21 @@
-name: Garmin Morning Sync
+name: Garmin Sync Telemetry Pipeline
 
 on:
   schedule:
-    - cron: '0 7 * * *'
-  workflow_dispatch:
+    # Runs every 30 minutes past the hour (00 and 30) between 04:00 UTC and 19:59 UTC
+    - cron: '0,30 4-19 * * *'
+    # Runs at 04:00 and 04:30 UTC (06:00 and 06:30 CEST) up through 20:00 and 20:30 UTC (22:00 and 22:30 CEST)
+    - cron: '0,30 20 * * *'
+  workflow_dispatch: # Allows manual trigger bypass buttons anytime
 
 jobs:
-  sync:
+  run-sync:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      # Keep your existing python installation, environment secrets configuration, and execution layers here
 
     - name: Set up Python
       uses: actions/setup-python@v5
