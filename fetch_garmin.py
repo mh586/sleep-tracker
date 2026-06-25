@@ -108,7 +108,15 @@ else:
     db = {}
 
 key = f"sleep_data_{todayStr}"
-db[key] = {k: v for k, v in m.items() if v != "--"}
+
+# Ensure the key for today exists as an object so we don't crash
+if key not in db:
+    db[key] = {}
+
+# Merging Strategy: Only update a metric if the new fetch has actual data
+for k, v in m.items():
+    if v != "--":
+        db[key][k] = v
 
 with open(db_filename, "w") as f:
     json.dump(db, f, indent=4)
