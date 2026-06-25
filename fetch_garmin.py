@@ -123,7 +123,7 @@ key = f"sleep_data_{todayStr}"
 if key not in db:
     db[key] = {}
 
-# Merge changes cleanly without deleting old attributes
+# Non-destructive loop: Layer Garmin stats on top without touching habit keys or caffeine logs
 for k, v in m.items():
     if v != "--":
         db[key][k] = v
