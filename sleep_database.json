@@ -12,5 +12,19 @@
         "g_rhr": "51 bpm",
         "g_ashr": "59 bpm",
         "g_resp": "15.0 brpm"
+    },
+    "sleep_data_2026-06-25": {
+        "g_score": "66",
+        "g_hrv": "37 ms",
+        "g_total": "7h 22m",
+        "g_deep": "1h 26m",
+        "g_rem": "50m",
+        "g_light": "5h 6m",
+        "g_awake": "4m",
+        "g_restless": "30 mvmt",
+        "g_stress": "35/100",
+        "g_rhr": "50 bpm",
+        "g_ashr": "63 bpm",
+        "g_resp": "14.0 brpm"
     }
 }
