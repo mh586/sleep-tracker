@@ -21,13 +21,11 @@
         .metric-lbl { font-size: 0.65rem; color: var(--muted-color); text-transform: uppercase; font-weight: 600; }
         .metric-val { font-size: 1.1rem; font-weight: bold; margin-top: 1px; }
 
-        /* Physiological Color Coding */
         .color-green { color: #4caf50 !important; }
         .color-orange { color: #ff9800 !important; }
         .color-red { color: #f44336 !important; }
         .color-neutral { color: var(--primary) !important; }
 
-        /* Gamification & Caffeine Panels */
         .gamify-panel { background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #334155; border-radius: 8px; padding: 12px; margin-bottom: 1rem; text-align: center; color: #f8fafc; }
         .gamify-headline { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: bold; margin-bottom: 4px; }
         .gamify-metrics { display: flex; justify-content: space-around; margin-top: 8px; }
@@ -71,7 +69,7 @@
                 <button class="caffeine-btn" onclick="logCoffee()">☕ Log Coffee</button>
                 <button class="outline secondary" style="margin:0; padding: 2px 8px; font-size:0.75rem;" onclick="resetCoffee()">Reset</button>
             </div>
-            <div style="font-size: 0.9rem;">Cups: <strong id="coffee_count">0</strong> | Clearance: <div id="clearance_status" class="clearance-badge bg-green">--:--</div></div>
+            <div style="font-size: 0.9rem;">Cups: <strong id="coffee_count">0</strong> | 18:00 Load: <div id="clearance_status" class="clearance-badge bg-green">0 mg</div></div>
         </div>
 
         <div class="section-title">Core Performance</div>
@@ -143,18 +141,28 @@
 
         async function fetchRemoteDatabase() {
             try {
-                const response = await fetch(`sleep_database.json?nocache=${new Date().getTime()}`);
-                if (response.ok) remoteDatabase = await response.json();
-            } catch (e) { console.log("Database baseline tracking loaded."); }
+                // FORCE CACHE-BUSTING BY APPENDING THE TIME PARAMETER
+                const cacheBuster = new Date().getTime();
+                const response = await fetch(`sleep_database.json?v=${cacheBuster}`);
+                if (response.ok) {
+                    remoteDatabase = await response.json();
+                }
+            } catch (e) { 
+                console.log("Remote fetch pipeline tracking initialized fallback."); 
+            }
             loadDate(datePicker.value);
         }
 
         function init() {
+            // STEP 1: RESOLVE DEFAULT DATE FIRST
             const todayStr = getLocalDateString(new Date());
             datePicker.value = todayStr;
+
             checkboxes.forEach(cb => {
                 cb.addEventListener('change', () => { saveLocalState(); toggleStyle(cb); updateGamificationEngine(); });
             });
+            
+            // STEP 2: TRIGGER TELEMETRY ENGINE FETCH AFTER BINDING DATE
             fetchRemoteDatabase();
             setInterval(calculateCaffeineClearance, 60000);
         }
@@ -165,7 +173,7 @@
             loadDate(todayStr);
         }
 
-        // --- CAFFEINE MUTATION ENGINE ---
+        // --- CAFFEINE LOGGING INTERFACE ---
         function getCaffeineLogKey() { return `caffeine_timestamps_${datePicker.value}`; }
         
         function logCoffee() {
@@ -173,6 +181,7 @@
             let timestamps = JSON.parse(localStorage.getItem(key) || "[]");
             timestamps.push(new Date().getTime());
             localStorage.setItem(key, JSON.stringify(timestamps));
+            
             calculateCaffeineClearance();
             updateGamificationEngine();
         }
@@ -249,4 +258,106 @@
         function colorizePhysiology() {
             const scoreEl = document.getElementById('g_score');
             const scoreVal = parseInt(scoreEl.innerText);
-            scoreEl.className = "metric-val " + (isNaN(scoreVal) ? "color-neutral" : scoreVal >= 85 ? "color-green" : scoreVal >= 70 ? "color-orange" : "color
+            scoreEl.className = "metric-val " + (isNaN(scoreVal) ? "color-neutral" : scoreVal >= 85 ? "color-green" : scoreVal >= 70 ? "color-orange" : "color-red");
+
+            const stressEl = document.getElementById('g_stress');
+            const stressVal = parseInt(stressEl.innerText);
+            stressEl.className = "metric-val " + (isNaN(stressVal) ? "color-neutral" : stressVal < 15 ? "color-green" : stressVal <= 25 ? "color-orange" : "color-red");
+
+            const deepMins = parseTimeToMinutes(document.getElementById('g_deep').innerText);
+            const remMins = parseTimeToMinutes(document.getElementById('g_rem').innerText);
+            const combinedMins = deepMins + remMins;
+            const deepEl = document.getElementById('g_deep');
+            const remEl = document.getElementById('g_rem');
+            
+            let stageClass = combinedMins === 0 ? "color-neutral" : combinedMins >= 150 ? "color-green" : combinedMins >= 90 ? "color-orange" : "color-red";
+            deepEl.className = "metric-val " + stageClass;
+            remEl.className = "metric-val " + stageClass;
+
+            const hrEl = document.getElementById('g_ashr');
+            const hrVal = parseInt(hrEl.innerText);
+            hrEl.className = "metric-val " + (isNaN(hrVal) ? "color-neutral" : hrVal < 60 ? "color-green" : hrVal <= 70 ? "color-orange" : "color-red");
+        }
+
+        function updateGamificationEngine() {
+            const checkedCount = form.querySelectorAll('input[type="checkbox"]:checked').length;
+            const totalHabits = checkboxes.length;
+            const habitPct = Math.round((checkedCount / totalHabits) * 100);
+            document.getElementById('habit_score').innerText = `${habitPct}%`;
+
+            const scoreVal = parseInt(document.getElementById('g_score').innerText);
+            const badgeEl = document.getElementById('badge_display');
+            
+            let earnedLoopToday = false;
+            if (!isNaN(scoreVal) && scoreVal >= 85 && habitPct >= 80) {
+                badgeEl.innerText = "🔥";
+                earnedLoopToday = true;
+                localStorage.setItem(`loop_achieved_${datePicker.value}`, "true");
+            } else if (!isNaN(scoreVal) && scoreVal >= 70) {
+                badgeEl.innerText = "⚡";
+                localStorage.removeItem(`loop_achieved_${datePicker.value}`);
+            } else {
+                badgeEl.innerText = "💤";
+                localStorage.removeItem(`loop_achieved_${datePicker.value}`);
+            }
+
+            calculateRollingStreak(earnedToday);
+        }
+
+        function calculateRollingStreak(earnedToday) {
+            let streak = 0;
+            let checkDate = new Date();
+            
+            for (let i = 0; i < 30; i++) {
+                let dateStr = getLocalDateString(checkDate);
+                if (localStorage.getItem(`loop_achieved_${dateStr}`) === "true") {
+                    streak++;
+                } else {
+                    if (i > 0) break;
+                    if (i === 0 && !earnedToday) { } else { break; }
+                }
+                checkDate.setDate(checkDate.getDate() - 1);
+            }
+            
+            document.getElementById('streak_count').innerText = `${streak} Days`;
+            document.getElementById('streak_alert').innerText = streak >= 3 ? `🔥 Optimal Streak Architecture: ${streak} Days!` : "Keep building consistency";
+        }
+
+        function loadDate(dateStr) {
+            const localSavedData = localStorage.getItem(`sleep_data_${dateStr}`);
+            const dayHabits = localSavedData ? JSON.parse(localSavedData) : {};
+            checkboxes.forEach(cb => {
+                cb.checked = !!dayHabits[cb.id];
+                toggleStyle(cb);
+            });
+
+            const remoteDayKey = `sleep_data_${dateStr}`;
+            const remoteDay = remoteDatabase[remoteDayKey] || {};
+            
+            metricsList.forEach(m => {
+                document.getElementById(m).innerText = remoteDay[m] || '--';
+            });
+
+            calculateCaffeineClearance();
+            colorizePhysiology();
+            updateGamificationEngine();
+        }
+
+        function saveLocalState() {
+            const activeDate = datePicker.value;
+            if (!activeDate) return;
+            const dayHabits = {};
+            checkboxes.forEach(cb => { if (cb.checked) dayHabits[cb.id] = true; });
+            localStorage.setItem(`sleep_data_${activeDate}`, JSON.stringify(dayHabits));
+        }
+
+        function toggleStyle(cb) {
+            const textSpan = cb.nextElementSibling;
+            if (cb.checked) textSpan.classList.add('strikethrough');
+            else textSpan.classList.remove('strikethrough');
+        }
+
+        init();
+    </script>
+</body>
+</html>
