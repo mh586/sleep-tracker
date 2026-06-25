@@ -194,7 +194,7 @@
             }
         }
 
-        function calculateCaffeineClearance() {
+function calculateCaffeineClearance() {
             const key = getCaffeineLogKey();
             const timestamps = JSON.parse(localStorage.getItem(key) || "[]");
             document.getElementById('coffee_count').innerText = timestamps.length;
@@ -209,38 +209,44 @@
             const CAFFEINE_PER_CUP = 80; 
             const HALF_LIFE_HOURS = 5.0; 
 
+            // Establish the concrete 18:00 target for the currently selected calendar day
             const targetDate18 = new Date(datePicker.value + 'T18:00:00');
             const time18 = targetDate18.getTime();
 
-            let caffeineAt18 = 0;
-            let currentSystemCaffeine = 0;
+            let totalCaffeineAt18 = 0;
+            let currentLiveCaffeine = 0;
             const now = new Date().getTime();
 
             timestamps.forEach(ts => {
-                if (time18 >= ts) {
-                    let hrs = (time18 - ts) / 3600000;
-                    caffeineAt18 += CAFFEINE_PER_CUP * Math.pow(0.5, hrs / HALF_LIFE_HOURS);
+                // 1. CALCULATE DECAY TO 18:00
+                if (ts <= time18) {
+                    // Standard decay window for cups drank BEFORE 18:00
+                    let hoursTo18 = (time18 - ts) / 3600000;
+                    totalCaffeineAt18 += CAFFEINE_PER_CUP * Math.pow(0.5, hoursTo18 / HALF_LIFE_HOURS);
                 } else {
-                    caffeineAt18 += CAFFEINE_PER_CUP;
+                    // Cup was drank AFTER 18:00. At 18:00, this caffeine didn't exist in the system yet.
+                    // We don't add it to the 18:00 load metric.
                 }
                 
+                // 2. CALCULATE LIVE CURRENT LEVEL RIGHT NOW
                 if (now >= ts) {
-                    let hrs = (now - ts) / 3600000;
-                    currentSystemCaffeine += CAFFEINE_PER_CUP * Math.pow(0.5, hrs / HALF_LIFE_HOURS);
+                    let hoursElapsedNow = (now - ts) / 3600000;
+                    currentLiveCaffeine += CAFFEINE_PER_CUP * Math.pow(0.5, hoursElapsedNow / HALF_LIFE_HOURS);
                 }
             });
 
-            badge.innerText = `${Math.round(currentSystemCaffeine)} mg live`;
+            // Update the badge display with the 18:00 Projected Residual Load
+            const rounded18Load = Math.round(totalCaffeineAt18);
+            badge.innerText = `${rounded18Load} mg @ 18:00`;
+            badge.title = `Live systemic level right now: ${Math.round(currentLiveCaffeine)} mg`;
 
-            if (caffeineAt18 <= 20) {
-                badge.className = "clearance-badge bg-green";
-                badge.title = `Est at 18:00: ${Math.round(caffeineAt18)}mg`;
-            } else if (caffeineAt18 <= 40) {
-                badge.className = "clearance-badge bg-orange";
-                badge.title = `Est at 18:00: ${Math.round(caffeineAt18)}mg`;
+            // 3. COLOR ARCHITECTURE EVALUATION AT 18:00
+            if (rounded18Load <= 20) {
+                badge.className = "clearance-badge bg-green"; // Clear and safe
+            } else if (rounded18Load <= 40) {
+                badge.className = "clearance-badge bg-orange"; // Borderline residual load
             } else {
-                badge.className = "clearance-badge bg-red";
-                badge.title = `Est at 18:00: ${Math.round(caffeineAt18)}mg`;
+                badge.className = "clearance-badge bg-red"; // High concentration window
             }
         }
 
