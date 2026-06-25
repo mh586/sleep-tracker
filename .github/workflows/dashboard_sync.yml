@@ -1,0 +1,55 @@
+name: Dashboard Web Sync Pipeline
+on:
+  repository_dispatch:
+    types: [web_habit_update]
+
+jobs:
+  sync_ledger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: Process Web Interaction Matrix
+        run: |
+          import json
+          import os
+
+          # Receive the event payload fired from your phone/PC browser
+          payload_str = '${{ toJson(github.event.client_payload) }}'
+          payload = json.loads(payload_str)
+          
+          day_key = payload.get("dayKey")
+          updates = payload.get("updates")
+
+          db_filename = "sleep_database.json"
+          if os.path.exists(db_filename):
+              with open(db_filename, "r") as f:
+                  try: db = json.load(f)
+                  except: db = {}
+          else:
+              db = {}
+
+          if day_key not in db:
+              db[day_key] = {}
+
+          # Non-destructively merge the checkboxes/coffee timestamp array
+          for k, v in updates.items():
+              db[day_key][k] = v
+
+          with open(db_filename, "w") as f:
+              json.dump(db, f, indent=4)
+              
+          print(f"Successfully integrated web ecosystem changes for {day_key}")
+        shell: python
+
+      - name: Commit and Force Sync back to Repository
+        run: |
+          git config --global user.name "Dashboard Sync Bot"
+          git config --global user.email "actions@github.com"
+          git add sleep_database.json
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "Web App State Update Matrix [skip ci]"
+            git pull --rebase origin main
+            git push origin main
+          fi
