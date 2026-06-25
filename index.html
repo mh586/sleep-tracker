@@ -169,7 +169,7 @@
             return token;
         }
 
-        async function fetchRemoteDatabase() {
+async function fetchRemoteDatabase() {
             try {
                 const cacheBuster = new Date().getTime();
                 const response = await fetch(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${FILE_PATH}?v=${cacheBuster}`);
@@ -177,9 +177,9 @@
                     remoteDatabase = await response.json();
                 }
             } catch (e) { 
-                console.log("Error loading remote database records:", e); 
+                console.log("Reading historical database records."); 
             }
-            // CRITICAL: We parse the calendar date ONLY after the JSON array payload is fully loaded into memory
+            // Execute layout parser
             loadDate(datePicker.value);
         }
 
@@ -304,7 +304,7 @@
         }
 
         // --- HABITS DISPATCH MANAGEMENT ---
-        async function saveLocalState() {
+async function saveLocalState() {
             const activeDate = datePicker.value;
             const dayKey = `sleep_data_${activeDate}`;
             let payload = {};
@@ -317,16 +317,27 @@
                 payload[habitKey] = cb.checked;
             });
 
+            // INSTANT FALLBACK BACKUP: Save to immediate storage so refreshes never clear it
+            localStorage.setItem(`backup_habits_${activeDate}`, JSON.stringify(payload));
+
             await dispatchUpdateToGitHub(dayKey, payload);
         }
 
-        function loadDate(dateStr) {
+function loadDate(dateStr) {
             const remoteDayKey = `sleep_data_${dateStr}`;
             const remoteDay = remoteDatabase[remoteDayKey] || {};
             
-            // KEY CORRECTION FIXED HERE: matching "habit_" structure smoothly
+            // Read immediate local backup state if GitHub's backend is still building the file
+            const localBackupStr = localStorage.getItem(`backup_habits_${dateStr}`);
+            const localBackup = localBackupStr ? JSON.parse(localBackupStr) : null;
+
             checkboxes.forEach(cb => {
-                cb.checked = remoteDay[`habit_${cb.id}`] === true;
+                const habitKey = `habit_${cb.id}`;
+                if (localBackup && localBackup[habitKey] !== undefined) {
+                    cb.checked = localBackup[habitKey] === true;
+                } else {
+                    cb.checked = remoteDay[habitKey] === true;
+                }
                 toggleStyle(cb);
             });
 
@@ -335,7 +346,7 @@
                 if (el) el.innerText = remoteDay[m] || '--';
             });
 
-            // Re-render display elements
+            // Re-render telemetry blocks
             document.getElementById('g_hr_30m').innerText = remoteDay['avg_hr_30m'] || '--';
             document.getElementById('g_stress_30m').innerText = remoteDay['avg_stress_30m'] || '--';
             document.getElementById('g_steps_today').innerText = remoteDay['today_steps'] ? remoteDay['today_steps'].toLocaleString() : '--';
