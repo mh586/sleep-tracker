@@ -22,9 +22,83 @@
         "g_light": "5h 6m",
         "g_awake": "4m",
         "g_restless": "30 mvmt",
-        "g_stress": "35/100",
-        "g_rhr": "50 bpm",
+        "g_stress": 31,
+        "g_rhr": 50,
         "g_ashr": "63 bpm",
-        "g_resp": "14.0 brpm"
+        "g_resp": "14.0 brpm",
+        "today_steps": 0,
+        "inactivity_alerts": 21,
+        "chart_timeline": [
+            {
+                "time": "22:00",
+                "hr": 72,
+                "stress": 0
+            },
+            {
+                "time": "22:30",
+                "hr": 71,
+                "stress": 0
+            },
+            {
+                "time": "23:00",
+                "hr": 59,
+                "stress": 0
+            },
+            {
+                "time": "23:30",
+                "hr": 64,
+                "stress": 0
+            },
+            {
+                "time": "00:00",
+                "hr": 53,
+                "stress": 0
+            },
+            {
+                "time": "00:30",
+                "hr": 64,
+                "stress": 0
+            },
+            {
+                "time": "01:00",
+                "hr": 62,
+                "stress": 0
+            },
+            {
+                "time": "01:30",
+                "hr": 57,
+                "stress": 0
+            },
+            {
+                "time": "02:00",
+                "hr": 56,
+                "stress": 0
+            },
+            {
+                "time": "02:30",
+                "hr": 59,
+                "stress": 0
+            },
+            {
+                "time": "03:00",
+                "hr": 57,
+                "stress": 0
+            },
+            {
+                "time": "03:30",
+                "hr": 48,
+                "stress": 0
+            },
+            {
+                "time": "04:00",
+                "hr": 64,
+                "stress": 0
+            },
+            {
+                "time": "04:30",
+                "hr": 59,
+                "stress": 0
+            }
+        ]
     }
 }
