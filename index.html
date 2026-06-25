@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bio-Architect: Sleep & Recovery Ledger</title>
@@ -63,13 +64,28 @@
             </div>
         </div>
 
-        <div class="section-title">Adenosine Clearance Engine</div>
+<div class="section-title">Adenosine Clearance Engine</div>
         <div class="caffeine-panel">
             <div class="caffeine-btn-container">
                 <button class="caffeine-btn" onclick="logCoffee()">☕ Log Coffee</button>
                 <button class="outline secondary" style="margin:0; padding: 2px 8px; font-size:0.75rem;" onclick="resetCoffee()">Reset</button>
             </div>
             <div style="font-size: 0.9rem;">Cups: <strong id="coffee_count">0</strong> | 18:00 Load: <div id="clearance_status" class="clearance-badge bg-green">0 mg</div></div>
+        </div>
+
+        <div class="section-title">Live Rolling Telemetry (Last 30 Min)</div>
+        <div class="metrics-grid">
+            <div class="metric-card"><div class="metric-lbl">30m Avg HR</div><div class="metric-val color-neutral" id="g_hr_30m">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">30m Avg Stress</div><div class="metric-val color-neutral" id="g_stress_30m">--</div></div>
+            <div class="metric-card"><div class="metric-lbl">Inactivity Alerts</div><div class="metric-val color-red" id="g_idle_alerts">0</div></div>
+        </div>
+        <div class="metrics-grid">
+            <div class="metric-card" style="grid-column: span 3;"><div class="metric-lbl">Steps Today</div><div class="metric-val color-green" id="g_steps_today">--</div></div>
+        </div>
+
+        <div class="section-title">Intraday Strain Architecture</div>
+        <div style="background: var(--card-background-color); border: 1px solid var(--card-border-color); border-radius: 8px; padding: 10px; margin-bottom: 1rem;">
+            <canvas id="strainChart" style="width: 100%; height: 180px;"></canvas>
         </div>
 
         <div class="section-title">Core Performance</div>
@@ -125,8 +141,9 @@
         const form = document.getElementById('checklistForm');
         const checkboxes = form.querySelectorAll('input[type="checkbox"]');
         const metricsList = [
-            'g_score', 'g_hrv', 'g_total', 'g_deep', 'g_rem', 
-            'g_light', 'g_awake', 'g_restless', 'g_stress', 'g_rhr', 'g_ashr', 'g_resp'
+'g_score', 'g_hrv', 'g_total', 'g_deep', 'g_rem', 
+            'g_light', 'g_awake', 'g_restless', 'g_stress', 'g_rhr', 'g_ashr', 'g_resp',
+            'avg_hr_30m', 'avg_stress_30m', 'today_steps', 'inactivity_alerts'
         ];
         let remoteDatabase = {};
         
@@ -326,7 +343,7 @@ function calculateCaffeineClearance() {
             document.getElementById('streak_alert').innerText = streak >= 3 ? `🔥 Optimal Streak Architecture: ${streak} Days!` : "Keep building consistency";
         }
 
-        function loadDate(dateStr) {
+function loadDate(dateStr) {
             const localSavedData = localStorage.getItem(`sleep_data_${dateStr}`);
             const dayHabits = localSavedData ? JSON.parse(localSavedData) : {};
             checkboxes.forEach(cb => {
@@ -337,9 +354,20 @@ function calculateCaffeineClearance() {
             const remoteDayKey = `sleep_data_${dateStr}`;
             const remoteDay = remoteDatabase[remoteDayKey] || {};
             
+            // Your existing mapping loop
             metricsList.forEach(m => {
-                document.getElementById(m).innerText = remoteDay[m] || '--';
+                const el = document.getElementById(m);
+                if (el) el.innerText = remoteDay[m] || '--';
             });
+
+            // ADD THESE LINES DIRECTLY BELOW THE LOOP
+            document.getElementById('g_hr_30m').innerText = remoteDay['avg_hr_30m'] || '--';
+            document.getElementById('g_stress_30m').innerText = remoteDay['avg_stress_30m'] || '--';
+            document.getElementById('g_steps_today').innerText = remoteDay['today_steps'] ? remoteDay['today_steps'].toLocaleString() : '--';
+            document.getElementById('g_idle_alerts').innerText = remoteDay['inactivity_alerts'] || '0';
+
+            // TRIGGER THE GRAPH RENDERER
+            renderStrainChart(remoteDay['chart_timeline'] || []);
 
             calculateCaffeineClearance();
             colorizePhysiology();
