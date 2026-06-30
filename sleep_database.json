@@ -1020,7 +1020,7 @@
         ]
     },
     "sleep_data_2026-06-30": {
-        "g_stress": 36,
+        "g_stress": 37,
         "g_rhr": 49,
         "today_steps": 0,
         "inactivity_alerts": 17,
@@ -1168,6 +1168,46 @@
             {
                 "time": "12:06",
                 "hr": 79,
+                "stress": 0
+            },
+            {
+                "time": "12:36",
+                "hr": 80,
+                "stress": 0
+            },
+            {
+                "time": "13:06",
+                "hr": 78,
+                "stress": 0
+            },
+            {
+                "time": "13:36",
+                "hr": 69,
+                "stress": 0
+            },
+            {
+                "time": "14:06",
+                "hr": 78,
+                "stress": 0
+            },
+            {
+                "time": "14:36",
+                "hr": 66,
+                "stress": 0
+            },
+            {
+                "time": "15:06",
+                "hr": 66,
+                "stress": 0
+            },
+            {
+                "time": "15:36",
+                "hr": 74,
+                "stress": 0
+            },
+            {
+                "time": "16:06",
+                "hr": 78,
                 "stress": 0
             }
         ]
