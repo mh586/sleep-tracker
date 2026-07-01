@@ -1216,7 +1216,7 @@
         "g_stress": 30,
         "g_rhr": 54,
         "today_steps": 0,
-        "inactivity_alerts": 15,
+        "inactivity_alerts": 16,
         "chart_timeline": [
             {
                 "time": "22:00",
@@ -1281,6 +1281,46 @@
             {
                 "time": "04:00",
                 "hr": 84,
+                "stress": 0
+            },
+            {
+                "time": "04:30",
+                "hr": 65,
+                "stress": 0
+            },
+            {
+                "time": "05:00",
+                "hr": 72,
+                "stress": 0
+            },
+            {
+                "time": "05:30",
+                "hr": 75,
+                "stress": 0
+            },
+            {
+                "time": "06:00",
+                "hr": 60,
+                "stress": 0
+            },
+            {
+                "time": "06:30",
+                "hr": 59,
+                "stress": 0
+            },
+            {
+                "time": "07:00",
+                "hr": 62,
+                "stress": 0
+            },
+            {
+                "time": "07:30",
+                "hr": 64,
+                "stress": 0
+            },
+            {
+                "time": "08:00",
+                "hr": 81,
                 "stress": 0
             }
         ]
