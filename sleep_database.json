@@ -2200,7 +2200,7 @@
         "avg_hr_30m": 71
     },
     "sleep_data_2026-07-06": {
-        "g_stress": 23,
+        "g_stress": 31,
         "g_rhr": 47,
         "today_steps": 0,
         "inactivity_alerts": 13,
@@ -2288,6 +2288,126 @@
             {
                 "time": "06:00",
                 "hr": 79,
+                "stress": 0
+            },
+            {
+                "time": "06:30",
+                "hr": 73,
+                "stress": 0
+            },
+            {
+                "time": "07:00",
+                "hr": 114,
+                "stress": 0
+            },
+            {
+                "time": "07:30",
+                "hr": 78,
+                "stress": 0
+            },
+            {
+                "time": "08:00",
+                "hr": 78,
+                "stress": 0
+            },
+            {
+                "time": "08:30",
+                "hr": 64,
+                "stress": 0
+            },
+            {
+                "time": "09:00",
+                "hr": 59,
+                "stress": 0
+            },
+            {
+                "time": "09:30",
+                "hr": 67,
+                "stress": 0
+            },
+            {
+                "time": "10:00",
+                "hr": 72,
+                "stress": 0
+            },
+            {
+                "time": "10:30",
+                "hr": 66,
+                "stress": 0
+            },
+            {
+                "time": "11:00",
+                "hr": 64,
+                "stress": 0
+            },
+            {
+                "time": "11:30",
+                "hr": 65,
+                "stress": 0
+            },
+            {
+                "time": "12:00",
+                "hr": 73,
+                "stress": 0
+            },
+            {
+                "time": "12:30",
+                "hr": 73,
+                "stress": 0
+            },
+            {
+                "time": "13:00",
+                "hr": 63,
+                "stress": 0
+            },
+            {
+                "time": "13:30",
+                "hr": 64,
+                "stress": 0
+            },
+            {
+                "time": "14:00",
+                "hr": 64,
+                "stress": 0
+            },
+            {
+                "time": "14:30",
+                "hr": 77,
+                "stress": 0
+            },
+            {
+                "time": "15:00",
+                "hr": 57,
+                "stress": 0
+            },
+            {
+                "time": "15:30",
+                "hr": 86,
+                "stress": 0
+            },
+            {
+                "time": "16:00",
+                "hr": 106,
+                "stress": 0
+            },
+            {
+                "time": "16:30",
+                "hr": 87,
+                "stress": 0
+            },
+            {
+                "time": "17:00",
+                "hr": 80,
+                "stress": 0
+            },
+            {
+                "time": "17:30",
+                "hr": 74,
+                "stress": 0
+            },
+            {
+                "time": "18:00",
+                "hr": 67,
                 "stress": 0
             }
         ]
