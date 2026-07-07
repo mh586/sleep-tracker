@@ -2413,7 +2413,7 @@
         ]
     },
     "sleep_data_2026-07-07": {
-        "g_stress": 16,
+        "g_stress": 21,
         "g_rhr": 47,
         "today_steps": 0,
         "inactivity_alerts": 23,
@@ -2481,6 +2481,76 @@
             {
                 "time": "04:00",
                 "hr": 61,
+                "stress": 0
+            },
+            {
+                "time": "05:18",
+                "hr": 80,
+                "stress": 0
+            },
+            {
+                "time": "05:48",
+                "hr": 77,
+                "stress": 0
+            },
+            {
+                "time": "06:18",
+                "hr": 66,
+                "stress": 0
+            },
+            {
+                "time": "06:48",
+                "hr": 63,
+                "stress": 0
+            },
+            {
+                "time": "07:18",
+                "hr": 59,
+                "stress": 0
+            },
+            {
+                "time": "07:48",
+                "hr": 54,
+                "stress": 0
+            },
+            {
+                "time": "08:18",
+                "hr": 57,
+                "stress": 0
+            },
+            {
+                "time": "08:48",
+                "hr": 60,
+                "stress": 0
+            },
+            {
+                "time": "09:18",
+                "hr": 73,
+                "stress": 0
+            },
+            {
+                "time": "09:48",
+                "hr": 61,
+                "stress": 0
+            },
+            {
+                "time": "10:18",
+                "hr": 62,
+                "stress": 0
+            },
+            {
+                "time": "10:48",
+                "hr": 64,
+                "stress": 0
+            },
+            {
+                "time": "11:18",
+                "hr": 63,
+                "stress": 0
+            },
+            {
+                "time": "11:48",
+                "hr": 68,
                 "stress": 0
             }
         ]
