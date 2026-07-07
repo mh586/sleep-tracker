@@ -2413,10 +2413,10 @@
         ]
     },
     "sleep_data_2026-07-07": {
-        "g_stress": 21,
+        "g_stress": 26,
         "g_rhr": 47,
         "today_steps": 0,
-        "inactivity_alerts": 23,
+        "inactivity_alerts": 26,
         "chart_timeline": [
             {
                 "time": "22:00",
@@ -2551,6 +2551,91 @@
             {
                 "time": "11:48",
                 "hr": 68,
+                "stress": 0
+            },
+            {
+                "time": "12:18",
+                "hr": 61,
+                "stress": 0
+            },
+            {
+                "time": "12:48",
+                "hr": 58,
+                "stress": 0
+            },
+            {
+                "time": "13:18",
+                "hr": 57,
+                "stress": 0
+            },
+            {
+                "time": "13:48",
+                "hr": 73,
+                "stress": 0
+            },
+            {
+                "time": "14:18",
+                "hr": 79,
+                "stress": 0
+            },
+            {
+                "time": "14:48",
+                "hr": 64,
+                "stress": 0
+            },
+            {
+                "time": "15:18",
+                "hr": 57,
+                "stress": 0
+            },
+            {
+                "time": "15:48",
+                "hr": 60,
+                "stress": 0
+            },
+            {
+                "time": "16:18",
+                "hr": 83,
+                "stress": 0
+            },
+            {
+                "time": "16:48",
+                "hr": 73,
+                "stress": 0
+            },
+            {
+                "time": "17:18",
+                "hr": 93,
+                "stress": 0
+            },
+            {
+                "time": "17:48",
+                "hr": 99,
+                "stress": 0
+            },
+            {
+                "time": "18:18",
+                "hr": 66,
+                "stress": 0
+            },
+            {
+                "time": "18:48",
+                "hr": 89,
+                "stress": 0
+            },
+            {
+                "time": "19:18",
+                "hr": 84,
+                "stress": 0
+            },
+            {
+                "time": "19:48",
+                "hr": 72,
+                "stress": 0
+            },
+            {
+                "time": "20:18",
+                "hr": 56,
                 "stress": 0
             }
         ]
