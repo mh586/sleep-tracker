@@ -2641,7 +2641,7 @@
         ]
     },
     "sleep_data_2026-07-08": {
-        "g_stress": 18,
+        "g_stress": 33,
         "g_rhr": 45,
         "today_steps": 0,
         "inactivity_alerts": 20,
@@ -2705,7 +2705,98 @@
                 "time": "03:30",
                 "hr": 45,
                 "stress": 0
+            },
+            {
+                "time": "04:00",
+                "hr": 104,
+                "stress": 0
+            },
+            {
+                "time": "04:30",
+                "hr": 68,
+                "stress": 0
+            },
+            {
+                "time": "05:00",
+                "hr": 68,
+                "stress": 0
+            },
+            {
+                "time": "05:30",
+                "hr": 95,
+                "stress": 0
+            },
+            {
+                "time": "06:00",
+                "hr": 72,
+                "stress": 0
+            },
+            {
+                "time": "06:30",
+                "hr": 58,
+                "stress": 0
+            },
+            {
+                "time": "07:00",
+                "hr": 84,
+                "stress": 0
+            },
+            {
+                "time": "07:30",
+                "hr": 78,
+                "stress": 0
+            },
+            {
+                "time": "08:00",
+                "hr": 75,
+                "stress": 0
+            },
+            {
+                "time": "08:30",
+                "hr": 77,
+                "stress": 0
+            },
+            {
+                "time": "09:00",
+                "hr": 75,
+                "stress": 0
+            },
+            {
+                "time": "09:30",
+                "hr": 78,
+                "stress": 0
+            },
+            {
+                "time": "10:00",
+                "hr": 71,
+                "stress": 0
+            },
+            {
+                "time": "10:30",
+                "hr": 75,
+                "stress": 0
+            },
+            {
+                "time": "11:00",
+                "hr": 62,
+                "stress": 0
+            },
+            {
+                "time": "11:30",
+                "hr": 72,
+                "stress": 0
+            },
+            {
+                "time": "12:00",
+                "hr": 77,
+                "stress": 0
+            },
+            {
+                "time": "12:30",
+                "hr": 58,
+                "stress": 0
             }
-        ]
+        ],
+        "avg_hr_30m": 67
     }
 }
