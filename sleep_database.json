@@ -2880,7 +2880,7 @@
         "avg_hr_30m": 67
     },
     "sleep_data_2026-07-09": {
-        "g_stress": 32,
+        "g_stress": 33,
         "g_rhr": 51,
         "today_steps": 0,
         "inactivity_alerts": 12,
@@ -2993,6 +2993,86 @@
             {
                 "time": "08:30",
                 "hr": 62,
+                "stress": 0
+            },
+            {
+                "time": "09:00",
+                "hr": 69,
+                "stress": 0
+            },
+            {
+                "time": "09:30",
+                "hr": 63,
+                "stress": 0
+            },
+            {
+                "time": "10:00",
+                "hr": 63,
+                "stress": 0
+            },
+            {
+                "time": "10:30",
+                "hr": 72,
+                "stress": 0
+            },
+            {
+                "time": "11:00",
+                "hr": 71,
+                "stress": 0
+            },
+            {
+                "time": "11:30",
+                "hr": 71,
+                "stress": 0
+            },
+            {
+                "time": "12:00",
+                "hr": 69,
+                "stress": 0
+            },
+            {
+                "time": "12:30",
+                "hr": 67,
+                "stress": 0
+            },
+            {
+                "time": "13:00",
+                "hr": 57,
+                "stress": 0
+            },
+            {
+                "time": "13:30",
+                "hr": 62,
+                "stress": 0
+            },
+            {
+                "time": "14:00",
+                "hr": 62,
+                "stress": 0
+            },
+            {
+                "time": "14:30",
+                "hr": 81,
+                "stress": 0
+            },
+            {
+                "time": "15:00",
+                "hr": 82,
+                "stress": 0
+            },
+            {
+                "time": "15:30",
+                "hr": 74,
+                "stress": 0
+            },
+            {
+                "time": "16:00",
+                "hr": 81,
+                "stress": 0
+            },
+            {
+                "time": "16:30",
+                "hr": 103,
                 "stress": 0
             }
         ]
