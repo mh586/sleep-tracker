@@ -3516,11 +3516,11 @@
         "avg_hr_30m": 86
     },
     "sleep_data_2026-07-12": {
-        "g_stress": 24,
+        "g_stress": 27,
         "g_rhr": 50,
-        "avg_hr_30m": 82,
+        "avg_hr_30m": 74,
         "today_steps": 0,
-        "inactivity_alerts": 21,
+        "inactivity_alerts": 23,
         "chart_timeline": [
             {
                 "time": "22:00",
@@ -3605,6 +3605,26 @@
             {
                 "time": "06:00",
                 "hr": 95,
+                "stress": 0
+            },
+            {
+                "time": "06:30",
+                "hr": 69,
+                "stress": 0
+            },
+            {
+                "time": "08:46",
+                "hr": 105,
+                "stress": 0
+            },
+            {
+                "time": "09:16",
+                "hr": 89,
+                "stress": 0
+            },
+            {
+                "time": "09:46",
+                "hr": 68,
                 "stress": 0
             }
         ]
