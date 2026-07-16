@@ -4264,7 +4264,7 @@
         "g_stress": 12,
         "g_rhr": 45,
         "today_steps": 0,
-        "inactivity_alerts": 27,
+        "inactivity_alerts": 34,
         "chart_timeline": [
             {
                 "time": "22:00",
@@ -4339,6 +4339,11 @@
             {
                 "time": "05:00",
                 "hr": 59,
+                "stress": 0
+            },
+            {
+                "time": "05:30",
+                "hr": 82,
                 "stress": 0
             }
         ]
