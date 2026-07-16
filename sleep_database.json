@@ -4259,5 +4259,88 @@
             }
         ],
         "avg_hr_30m": 74
+    },
+    "sleep_data_2026-07-16": {
+        "g_stress": 12,
+        "g_rhr": 45,
+        "today_steps": 0,
+        "inactivity_alerts": 27,
+        "chart_timeline": [
+            {
+                "time": "22:00",
+                "hr": 53,
+                "stress": 0
+            },
+            {
+                "time": "22:30",
+                "hr": 48,
+                "stress": 0
+            },
+            {
+                "time": "23:00",
+                "hr": 59,
+                "stress": 0
+            },
+            {
+                "time": "23:30",
+                "hr": 55,
+                "stress": 0
+            },
+            {
+                "time": "00:00",
+                "hr": 54,
+                "stress": 0
+            },
+            {
+                "time": "00:30",
+                "hr": 56,
+                "stress": 0
+            },
+            {
+                "time": "01:00",
+                "hr": 45,
+                "stress": 0
+            },
+            {
+                "time": "01:30",
+                "hr": 47,
+                "stress": 0
+            },
+            {
+                "time": "02:00",
+                "hr": 51,
+                "stress": 0
+            },
+            {
+                "time": "02:30",
+                "hr": 46,
+                "stress": 0
+            },
+            {
+                "time": "03:00",
+                "hr": 57,
+                "stress": 0
+            },
+            {
+                "time": "03:30",
+                "hr": 61,
+                "stress": 0
+            },
+            {
+                "time": "04:00",
+                "hr": 47,
+                "stress": 0
+            },
+            {
+                "time": "04:30",
+                "hr": 48,
+                "stress": 0
+            },
+            {
+                "time": "05:00",
+                "hr": 59,
+                "stress": 0
+            }
+        ]
     }
 }
