@@ -4882,7 +4882,7 @@
         "avg_hr_30m": 86
     },
     "sleep_data_2026-07-19": {
-        "g_stress": 27,
+        "g_stress": 34,
         "g_rhr": 49,
         "today_steps": 0,
         "inactivity_alerts": 8,
@@ -4985,6 +4985,46 @@
             {
                 "time": "07:36",
                 "hr": 111,
+                "stress": 0
+            },
+            {
+                "time": "08:06",
+                "hr": 74,
+                "stress": 0
+            },
+            {
+                "time": "08:36",
+                "hr": 81,
+                "stress": 0
+            },
+            {
+                "time": "09:06",
+                "hr": 64,
+                "stress": 0
+            },
+            {
+                "time": "09:36",
+                "hr": 99,
+                "stress": 0
+            },
+            {
+                "time": "10:06",
+                "hr": 91,
+                "stress": 0
+            },
+            {
+                "time": "10:36",
+                "hr": 97,
+                "stress": 0
+            },
+            {
+                "time": "11:06",
+                "hr": 99,
+                "stress": 0
+            },
+            {
+                "time": "11:36",
+                "hr": 96,
                 "stress": 0
             }
         ]
