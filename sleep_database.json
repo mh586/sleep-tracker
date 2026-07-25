@@ -6061,7 +6061,7 @@
         "g_stress": 33,
         "g_rhr": 51,
         "today_steps": 0,
-        "inactivity_alerts": 23,
+        "inactivity_alerts": 26,
         "chart_timeline": [
             {
                 "time": "22:00",
@@ -6232,8 +6232,38 @@
                 "time": "15:02",
                 "hr": 70,
                 "stress": 0
+            },
+            {
+                "time": "15:32",
+                "hr": 78,
+                "stress": 0
+            },
+            {
+                "time": "16:02",
+                "hr": 62,
+                "stress": 0
+            },
+            {
+                "time": "16:32",
+                "hr": 64,
+                "stress": 0
+            },
+            {
+                "time": "17:02",
+                "hr": 69,
+                "stress": 0
+            },
+            {
+                "time": "17:32",
+                "hr": 64,
+                "stress": 0
+            },
+            {
+                "time": "18:02",
+                "hr": 68,
+                "stress": 0
             }
         ],
-        "avg_hr_30m": 69
+        "avg_hr_30m": 63
     }
 }
